@@ -160,17 +160,25 @@ namespace PetCityApi1.Models
             public string HotelAddress { get; set; }
 
 
+            ////[Required(ErrorMessage = "{0}必填")]
+            //[MaxLength(50)] //不設長度自動nvarchar(max)
+            //[Display(Name = "旅館營業開始時間")] //欄位名稱
+            //public string HotelStartTime { get; set; }
+
+
+
+            ////[Required(ErrorMessage = "{0}必填")]
+            //[MaxLength(50)] //不設長度自動nvarchar(max)
+            //[Display(Name = "旅館營業結束時間")] //欄位名稱
+            //public string HotelEndTime { get; set; }
+
+
+
+
             //[Required(ErrorMessage = "{0}必填")]
-            [MaxLength(50)] //不設長度自動nvarchar(max)
-            [Display(Name = "旅館營業開始時間")] //欄位名稱
-            public string HotelStartTime { get; set; }
-
-
-
-            //[Required(ErrorMessage = "{0}必填")]
-            [MaxLength(50)] //不設長度自動nvarchar(max)
-            [Display(Name = "旅館營業結束時間")] //欄位名稱
-            public string HotelEndTime { get; set; }
+            /*[MaxLength(50)]*/ //不設長度自動nvarchar(max)
+            [Display(Name = "旅館營業時間")] //欄位名稱
+            public List<string> HotelBusinessTime { get; set; }
 
 
 
@@ -241,6 +249,44 @@ namespace PetCityApi1.Models
             //[MaxLength(50)]  //不設長度自動nvarchar(max)
             [Display(Name = "房間簡介")]//欄位名稱
             public string RoomInfo { get; set; }
+
+        }
+
+        public class Filter
+        {
+            [Display(Name = "地區")] public int? AreaId { get; set; }
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "寵物類型")]//欄位名稱
+            public string PetType { get; set; }
+
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            //[MaxLength(50)] 不設長度自動nvarchar(max)
+            [Display(Name = "食物類型")] //欄位名稱
+            public string[] FoodTypes { get; set; }
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            //[MaxLength(50)]  //不設長度自動nvarchar(max) 
+            [Display(Name = "旅館服務")] //欄位名稱
+            public string[] ServiceTypes { get; set; }
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "入住日期")]//欄位名稱
+            public string CheckInDate { get; set; }
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "退房日期")]//欄位名稱
+            public string CheckOutDate { get; set; }
+
+
 
         }
 

@@ -253,6 +253,7 @@
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\HotelController.cs" />
+    <Compile Include="Controllers\PetcardController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
@@ -322,6 +323,22 @@
     <Compile Include="Migrations\202212050714251_updateOrderScoreType.Designer.cs">
       <DependentUpon>202212050714251_updateOrderScoreType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202212081520488_updateOrderTable.cs" />
+    <Compile Include="Migrations\202212081520488_updateOrderTable.Designer.cs">
+      <DependentUpon>202212081520488_updateOrderTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212090509385_updateOrderTotalInfo.cs" />
+    <Compile Include="Migrations\202212090509385_updateOrderTotalInfo.Designer.cs">
+      <DependentUpon>202212090509385_updateOrderTotalInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212090522532_updateOrderContactInfo.cs" />
+    <Compile Include="Migrations\202212090522532_updateOrderContactInfo.Designer.cs">
+      <DependentUpon>202212090522532_updateOrderContactInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212090812036_updateOrderDateType.cs" />
+    <Compile Include="Migrations\202212090812036_updateOrderDateType.Designer.cs">
+      <DependentUpon>202212090812036_updateOrderDateType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Area.cs" />
     <Compile Include="Models\Customer.cs" />
@@ -333,9 +350,9 @@
     <Compile Include="Models\PetCityNewcontext.cs" />
     <Compile Include="Models\ReservedList.cs" />
     <Compile Include="Models\Room.cs" />
-    <Compile Include="Models\TaskLogEntity.cs" />
     <Compile Include="Models\ViewModelCust.cs" />
     <Compile Include="Models\ViewModelHotel.cs" />
+    <Compile Include="Models\ViewModelPet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -469,6 +486,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202212050714251_updateOrderScoreType.resx">
       <DependentUpon>202212050714251_updateOrderScoreType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212081520488_updateOrderTable.resx">
+      <DependentUpon>202212081520488_updateOrderTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212090509385_updateOrderTotalInfo.resx">
+      <DependentUpon>202212090509385_updateOrderTotalInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212090522532_updateOrderContactInfo.resx">
+      <DependentUpon>202212090522532_updateOrderContactInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212090812036_updateOrderDateType.resx">
+      <DependentUpon>202212090812036_updateOrderDateType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

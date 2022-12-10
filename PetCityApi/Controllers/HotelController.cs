@@ -29,7 +29,6 @@ using SixLabors.ImageSharp.Processing;
 
 namespace PetCityApi1.Controllers
 {
-
     [OpenApiTag("Hotels", Description = "旅館註冊登入CURD")]
     public class HotelController : ApiController
     {
@@ -84,7 +83,6 @@ namespace PetCityApi1.Controllers
                 string emailbody = "這邊是首頁的連結：/homepage";
                 DateTime now = DateTime.Now;
                 string Subject = $"{now.ToString("yyyy/MM/dd")}註冊信";
-                //string body = $"感謝您註冊寵物坊城市，您已經可以開始使用。{emailbody}";
 
                 SendGmailMail(fromEmail, toEmail, Subject, body, password);
 
@@ -153,10 +151,9 @@ namespace PetCityApi1.Controllers
 
             if (hotel != null) //有此帳號 
             {
-                //這個=加密過
                 login.HotelPassWord = BitConverter
                     .ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(login.HotelPassWord)))
-                    .Replace("-", null);
+                    .Replace("-", null);//這個=加密過
 
                 if (hotel.HotelPassWord == login.HotelPassWord && hotel.Identity == login.Identity)
                 {
@@ -240,7 +237,6 @@ namespace PetCityApi1.Controllers
                 // 修改個人資料至資料庫
 
                 PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-
                 Hotel hotel = petCityDbContext.Hotels.Where(h => h.HotelGuid == guid).FirstOrDefault();
 
                 if (hotel != null)
@@ -285,17 +281,16 @@ namespace PetCityApi1.Controllers
         }
 
         /// <summary>
-        /// 寵物旅館後台管理-業者讀取旅館資訊
+        /// 寵物旅館後台管理-業者讀取旅館資訊-後台
         /// </summary>
         [JwtAuthFilter_Hotel] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         [Route("hotel/")]
         public IHttpActionResult Get()
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去get資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
-            int hoteld = (int)userToken["Id"];
+            int hotelId = (int)userToken["Id"];
 
             //1.有取到 JwtToken 後，判斷授權格式不存在且不正確時，請重新登入  記得加上Bearer
             //2.檢查有效期限是否過期，如 JwtToken 過期，需導引重新登入
@@ -303,136 +298,94 @@ namespace PetCityApi1.Controllers
 
             // Do Something ~
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
+            Hotel hotel = petCityDbContext.Hotels.Where(h => h.Id == hotelId).FirstOrDefault();
+            if (hotel == null)
+            {
+                return BadRequest("無此帳號");
+            }
 
-            Hotel hotel = petCityDbContext.Hotels.Where(h => h.Id == hoteld).FirstOrDefault();
+            //從資料庫"取資料" //轉成陣列傳給前端
+            var foodTypes = petCityDbContext.Hotels.FirstOrDefault(h => h.Id == hotelId).FoodTypes;
+            List<string> foodTypeArr = foodTypes?.Split(',').ToList();
+            var serviceTypes = petCityDbContext.Hotels.FirstOrDefault(h => h.Id == hotelId).ServiceTypes;
+            List<string> serviceTypeArr = serviceTypes?.Split(',').ToList();
 
-
+            List<string> hotelPhotoList = new List<string>();
 
             //因為沒有照片 System.NullReferenceException
+            //讀資料庫數量 如果總數量小於5 就取總數量  剛好或是超過5就是5張
 
-            var hotelPhoto = petCityDbContext.HotelPhotos.Where(r => r.HotelId == hoteld).OrderByDescending(r => r.Id).Take(5);
-
+            int photoCount = 5;
+            int actTotalCount = petCityDbContext.HotelPhotos.Count();
+            if (actTotalCount < 5)
+            {
+                photoCount = actTotalCount;
+            }
+            var hotelPhoto = petCityDbContext.HotelPhotos.Where(r => r.HotelId == hotelId)
+                .OrderByDescending(r => r.Id).Take(photoCount);
 
             if (hotelPhoto != null)
             {
-                
-                List<string> hotelPhotoList = new List<string>();
                 foreach (var photo in hotelPhoto)
                 {
                     hotelPhotoList.Add("https://petcity.rocket-coding.com/upload/profile/" + photo.Photo);
                 }
-
-
-                var foodTypes = petCityDbContext.Hotels.FirstOrDefault(h => h.Id == hoteld).FoodTypes;
-                List<string> foodTypeArr = new List<string>();
-                if (foodTypes != null)
-                {
-                    foodTypeArr = foodTypes.Split(',').ToList();
-                }
-
-                var serviceTypes = petCityDbContext.Hotels.FirstOrDefault(h => h.Id == hoteld).ServiceTypes;
-                List<string> serviceTypeArr = new List<string>();
-                if (serviceTypes != null)
-                {
-                    serviceTypeArr = serviceTypes.Split(',').ToList();
-                }
-
-
-                if (hotel != null)
-                {
-
-                    var result = new //這樣會用兩份記憶體
-                    {
-                        HotelName = hotel.HotelName,
-                        HotelPhone = hotel.HotelPhone,
-                        HotelArea = hotel.Area.Areas,
-                        HotelAddress = hotel.HotelAddress,
-                        HotelStartTime = hotel.HotelStartTime,
-                        HotelEndTime = hotel.HotelEndTime,
-                        HotelInfo = hotel.HotelInfo,
-
-                        //FoodTypes = hotel.FoodTypes,
-                        FoodTypes = foodTypeArr,
-                        //ServiceTypes = hotel.ServiceTypes,
-                        ServiceTypes = serviceTypeArr,
-
-                        HotelPhotos = hotelPhotoList,
-                        HotelThumbnail = "https://petcity.rocket-coding.com/upload/profile/" + hotel.HotelThumbnail,
-                    };
-
-                    // 處理完請求內容
-                    return Ok(new { Status = true, result });
-                }
-                else
-                {
-                    return BadRequest("無此帳號");
-                }
             }
-            else  //如果是空值
+
+            //string url = "https://petcity.rocket-coding.com/upload/profile/" + hotel.HotelThumbnail;
+            //if (hotel.HotelThumbnail != null)
+            //{
+            //    hotel.HotelThumbnail = url;               //這樣值會被蓋過去
+            //}
+            string url = null;
+            if (hotel.HotelThumbnail != null)
             {
-                var foodTypes = petCityDbContext.Hotels.FirstOrDefault(h => h.Id == hoteld).FoodTypes;
-                string[] foodTypeArr = foodTypes.Split(',');
-
-
-                var serviceTypes = petCityDbContext.Hotels.FirstOrDefault(h => h.Id == hoteld).ServiceTypes;
-                string[] serviceTypeArr = serviceTypes.Split(',');
-
-
-
-                if (hotel != null)
-                {
-                    var result = new //這樣會用兩份記憶體
-                    {
-                        HotelName = hotel.HotelName,
-                        HotelPhone = hotel.HotelPhone,
-                        HotelArea = hotel.Area.Areas,
-                        HotelAddress = hotel.HotelAddress,
-                        HotelStartTime = hotel.HotelStartTime,
-                        HotelEndTime = hotel.HotelEndTime,
-                        HotelInfo = hotel.HotelInfo,
-
-                        //FoodTypes = hotel.FoodTypes,
-                        FoodTypes = foodTypeArr,
-                        //ServiceTypes = hotel.ServiceTypes,
-                        ServiceTypes = serviceTypeArr,
-
-                        HotelPhotos = "",
-                        HotelThumbnail = "https://petcity.rocket-coding.com/upload/profile/" + hotel.HotelThumbnail,
-                    };
-
-                    // 處理完請求內容
-                    return Ok(new { Status = true, result });
-                }
-                else
-                {
-                    return BadRequest("無此帳號");
-                }
+                url = "https://petcity.rocket-coding.com/upload/profile/" + hotel.HotelThumbnail;
             }
 
+            var result = new //這樣會用兩份記憶體
+            {
+                HotelName = hotel.HotelName,
+                HotelPhone = hotel.HotelPhone,
+                HotelArea = hotel.Area?.Areas,              //? 如果是null回傳null  如果有值就回傳值
+                HotelAddress = hotel.HotelAddress,
+                HotelStartTime = hotel.HotelStartTime,
+                HotelEndTime = hotel.HotelEndTime,
+                HotelInfo = hotel.HotelInfo,
 
+                //FoodTypes = hotel.FoodTypes,
+                FoodTypes = foodTypeArr,
+                //ServiceTypes = hotel.ServiceTypes,
+                ServiceTypes = serviceTypeArr,
+
+                HotelPhotos = hotelPhotoList,
+                HotelThumbnail = url,
+            };
+
+            // 處理完請求內容
+            return Ok(new { Status = true, result });
         }
 
-       
         /// <summary>
-        ///  寵物旅館後台管理-業者修改旅館資訊
+        ///  寵物旅館後台管理-業者修改旅館資訊-後台
         /// </summary>
         [JwtAuthFilter_Hotel] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         [Route("hotel/")]
         public IHttpActionResult Put(ViewModelHotel.ModifyHotel modifyHotel)
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去put資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
-            int hoteld = (int)userToken["Id"];
+            int hotelId = (int)userToken["Id"];
 
             // Do Something ~
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-
-            Hotel hotel = petCityDbContext.Hotels.Where(h => h.Id == hoteld).FirstOrDefault();
-
+            Hotel hotel = petCityDbContext.Hotels.Where(h => h.Id == hotelId).FirstOrDefault();
 
             //前端傳陣列來  //組字串存進資料 不用再modifyHotel.FoodTypes.Split(',');
+            string resultStartTime = modifyHotel.HotelBusinessTime[0];
+            string resultEndtTime = modifyHotel.HotelBusinessTime[1];
+
             string resultFoodType = "";
             foreach (var type in modifyHotel.FoodTypes)
             {
@@ -440,15 +393,12 @@ namespace PetCityApi1.Controllers
             }
             resultFoodType = resultFoodType.TrimEnd(',');
 
-
             string resultServiceType = "";
             foreach (var type in modifyHotel.ServiceTypes)
             {
                 resultServiceType += type + ",";
             }
             resultServiceType = resultServiceType.TrimEnd(',');
-
-
 
             if (hotel != null)
             {
@@ -458,8 +408,8 @@ namespace PetCityApi1.Controllers
                 hotel.AreaId = modifyHotel.AreaId;
 
                 hotel.HotelAddress = modifyHotel.HotelAddress;
-                hotel.HotelStartTime = modifyHotel.HotelStartTime;
-                hotel.HotelEndTime = modifyHotel.HotelEndTime;
+                hotel.HotelStartTime = resultStartTime;
+                hotel.HotelEndTime = resultEndtTime;
                 hotel.HotelInfo = modifyHotel.HotelInfo;
 
                 //hotel.FoodTypes = modifyHotel.FoodTypes;
@@ -496,10 +446,10 @@ namespace PetCityApi1.Controllers
         public async Task<IHttpActionResult> UploadProfile() //Async Task 非同步
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去get資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
             int hoteld = (int)userToken["Id"];
+
 
             // 檢查請求是否包含 multipart/form-data.
             if (!Request.Content.IsMimeMultipartContent())
@@ -525,7 +475,7 @@ namespace PetCityApi1.Controllers
                 string fileType = fileNameData.Remove(0, fileNameData.LastIndexOf('.')); // .jpg
 
                 // 定義檔案名稱
-                string fileName = "UserName" + "Profile" + DateTime.Now.ToString("yyyyMMddHHmmss") + fileType;
+                string fileName = "Hotel" + "Profile" + DateTime.Now.ToString("yyyyMMddHHmmss") + fileType;
 
                 // 儲存圖片，單檔用.FirstOrDefault()直接取出，多檔需用迴圈
                 var fileBytes = await provider.Contents.FirstOrDefault().ReadAsByteArrayAsync();
@@ -537,13 +487,13 @@ namespace PetCityApi1.Controllers
 
                 // 使用 SixLabors.ImageSharp 調整圖片尺寸 (正方形大頭貼)
                 var image = SixLabors.ImageSharp.Image.Load<Rgba32>(outputPath);
-
                 image.Mutate(x => x.Resize(120, 120)); // 輸入(120, 0)會保持比例出現黑邊
                 image.Save(outputPath);
 
                 PetCityNewcontext petCityDbContext = new PetCityNewcontext();
                 Hotel hotel = petCityDbContext.Hotels.Where(h => h.Id == hoteld).FirstOrDefault();
                 hotel.HotelThumbnail = fileName;
+
                 petCityDbContext.SaveChanges();
 
                 return Ok(new
@@ -552,7 +502,6 @@ namespace PetCityApi1.Controllers
                     Data = new
                     {
                         FileName = "https://petcity.rocket-coding.com/upload/profile/" + fileName
-
                         //https://localhost:44385/upload/profile/
                     }
                 });
@@ -572,10 +521,9 @@ namespace PetCityApi1.Controllers
         public async Task<IHttpActionResult> UploadHotelPhotos() //Async Task 非同步
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去get資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
-            int hoteld = (int)userToken["Id"];
+            int hotelId = (int)userToken["Id"];
 
             // 檢查請求是否包含 multipart/form-data.
             if (!Request.Content.IsMimeMultipartContent())
@@ -590,15 +538,25 @@ namespace PetCityApi1.Controllers
                 Directory.CreateDirectory(@"~/upload/profile");
             }
 
+            //移除前一次上傳的東西
+            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
+            var hotelPhoto = petCityDbContext.HotelPhotos.Where(r => r.HotelId == hotelId).ToList();
+            if (hotelPhoto.Count > 0)
+            {
+                foreach (var item in hotelPhoto)
+                {
+                    petCityDbContext.HotelPhotos.Remove(item);
+                }
+                petCityDbContext.SaveChanges();
+            }
+
             try
             {
                 // 讀取 MIME(媒體類別) 資料
                 var provider = new MultipartMemoryStreamProvider();
                 await Request.Content.ReadAsMultipartAsync(provider);
 
-
                 List<string> photoList = new List<string>();
-
                 int photonum = 1;
 
                 foreach (var file in provider.Contents)
@@ -609,11 +567,9 @@ namespace PetCityApi1.Controllers
 
                     // 定義檔案名稱
                     //Task.Delay(1000);
-                    string fileName = "UserName" + "Profile" + DateTime.Now.ToString("yyyyMMddHHmmss") + photonum +
+                    string fileName = "Hotel" + "Photo" + DateTime.Now.ToString("yyyyMMddHHmmss") + photonum +
                                       fileType; //延遲delay
-
                     photonum++;
-
 
                     // 儲存圖片，單檔用.FirstOrDefault()直接取出，多檔需用迴圈
                     var fileBytes = await file.ReadAsByteArrayAsync();
@@ -629,20 +585,19 @@ namespace PetCityApi1.Controllers
                     image.Save(outputPath);
 
                     //將檔名存進資料庫
-                    PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-                    HotelPhoto hotelPhoto = new HotelPhoto();
+                    //PetCityNewcontext petCityDbContext = new PetCityNewcontext();
+                    HotelPhoto hotelPhotos = new HotelPhoto();
 
-                    hotelPhoto.Photo = fileName;
-                    hotelPhoto.HotelId = hoteld;
-                    petCityDbContext.HotelPhotos.Add(hotelPhoto);
+                    hotelPhotos.Photo = fileName;
+                    hotelPhotos.HotelId = hotelId;
+                    petCityDbContext.HotelPhotos.Add(hotelPhotos);
                     petCityDbContext.SaveChanges();
 
                     photoList.Add("https://petcity.rocket-coding.com/upload/profile/" + fileName);
-
                     //https://localhost:44385/upload/profile/
                 }
 
-                return Ok(new { Status = true, photoList });
+                return Ok(new { Status = true, photoList, });
             }
             catch (Exception e)
             {
@@ -656,13 +611,12 @@ namespace PetCityApi1.Controllers
         [Route("hotel/uploadroomphoto/")]
         [HttpPost]
         [JwtAuthFilter_Hotel] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
-        public async Task<IHttpActionResult> UploadRoomPhoto(int roomId) //Async Task 非同步
+        public async Task<IHttpActionResult> UploadRoomPhoto([FromUri] int roomId) //Async Task 非同步
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去get資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
-            int hoteld = (int)userToken["Id"];
+            int hotelId = (int)userToken["Id"];
 
 
             // 檢查請求是否包含 multipart/form-data.
@@ -684,14 +638,12 @@ namespace PetCityApi1.Controllers
                 var provider = new MultipartMemoryStreamProvider();
                 await Request.Content.ReadAsMultipartAsync(provider);
 
-
                 // 取得檔案副檔名，單檔用.FirstOrDefault()直接取出，多檔需用迴圈
                 string fileNameData = provider.Contents.FirstOrDefault().Headers.ContentDisposition.FileName.Trim('\"');
                 string fileType = fileNameData.Remove(0, fileNameData.LastIndexOf('.')); // .jpg
 
-
                 // 定義檔案名稱
-                string fileName = "UserName" + "Profile" + DateTime.Now.ToString("yyyyMMddHHmmss") + fileType;
+                string fileName = "Room" + "Photo" + DateTime.Now.ToString("yyyyMMddHHmmss") + fileType;
 
                 // 儲存圖片，單檔用.FirstOrDefault()直接取出，多檔需用迴圈
                 var fileBytes = await provider.Contents.FirstOrDefault().ReadAsByteArrayAsync();
@@ -709,9 +661,8 @@ namespace PetCityApi1.Controllers
 
 
                 PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-                var room = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld).Select(r => r.Id == roomId).ToList();
-                Room rooms = new Room();
-                rooms.RoomPhoto = fileName;
+                var room = petCityDbContext.Rooms.Where(r => r.HotelId == hotelId).Where(r => r.Id == roomId).ToList();
+                room[0].RoomPhoto = fileName;
 
                 petCityDbContext.SaveChanges();
 
@@ -731,7 +682,7 @@ namespace PetCityApi1.Controllers
         }
 
         /// <summary>
-        /// 寵物旅館後台管理-房型列表
+        /// 寵物旅館後台管理-讀取房型列表 (後台)
         /// </summary>
         [HttpGet]
         [Route("hotel/room/list")]
@@ -740,11 +691,11 @@ namespace PetCityApi1.Controllers
         {
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
-            int hoteld = (int)userToken["Id"];
+            int hotelId = (int)userToken["Id"];
 
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
-            var rooms = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld)
+            var rooms = petCityDbContext.Rooms.Where(r => r.HotelId == hotelId)
                 .ToList();
 
             List<Room> roomList = new List<Room>();
@@ -768,26 +719,24 @@ namespace PetCityApi1.Controllers
         }
 
         /// <summary>
-        ///  寵物旅館後台管理-房型列表-新增房型
+        ///  寵物旅館後台管理-房型列表-新增房型 (後台)
         /// </summary>
         [JwtAuthFilter_Hotel] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         [Route("hotel/room/")]
         public IHttpActionResult Post(ViewModelHotel.Room addRoom)
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去put資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
-            int hoteld = (int)userToken["Id"];
+            int hotelId = (int)userToken["Id"];
 
             // Do Something ~
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
-            var room = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld).Select(r => r.Id).ToList();
-            //由下往上找
+            var room = petCityDbContext.Rooms.Where(r => r.HotelId == hotelId).Select(r => r.Id).ToList();//由下往上找
 
             Room rooms = new Room();
-            rooms.HotelId = hoteld;
+            rooms.HotelId = hotelId;
             //rooms.RoomPhoto = addRoom.RoomPhoto;
             rooms.RoomName = addRoom.RoomName;
             rooms.PetType = addRoom.PetType;
@@ -801,19 +750,19 @@ namespace PetCityApi1.Controllers
             {
                 status = "success",
                 message = "新增房型成功",
+                roomid = rooms.Id,
             };
-            return Ok(result); //問前端配合200去處理  //還是status code
+            return Ok(new { Status = true, result }); //問前端配合200去處理  //還是status code
         }
 
         /// <summary>
-        ///  寵物旅館後台管理-房型列表-讀取房型
+        ///  寵物旅館後台管理-房型列表-讀取房型 (後台)
         /// </summary>
         [JwtAuthFilter_Hotel] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         [Route("hotel/room/")]
-        public IHttpActionResult Get(int roomid)
+        public IHttpActionResult Get(int roomId)
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去get資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
             int hoteld = (int)userToken["Id"];
@@ -832,7 +781,7 @@ namespace PetCityApi1.Controllers
 
             //}).ToList().FirstOrDefault();
 
-            var room = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld && r.Id == roomid).ToList()
+            var room = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld && r.Id == roomId).ToList()
                 .FirstOrDefault();
 
             var result = new //這樣會用兩份記憶體
@@ -849,19 +798,17 @@ namespace PetCityApi1.Controllers
                 // 處理完請求內容
                 return Ok(new { Status = true, result });
             }
-
             return BadRequest("無此房型");
         }
 
         /// <summary>
-        ///  寵物旅館後台管理-房型列表-修改房型
+        ///  寵物旅館後台管理-房型列表-修改房型 (後台)
         /// </summary>
         [JwtAuthFilter_Hotel] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         [Route("hotel/room/")]
-        public IHttpActionResult Put(int roomid, ViewModelHotel.Room addRoom)
+        public IHttpActionResult Put(int roomId, ViewModelHotel.Room addRoom)
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去put資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
             int hoteld = (int)userToken["Id"];
@@ -869,7 +816,7 @@ namespace PetCityApi1.Controllers
             // Do Something ~
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
-            Room room = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld).Where(r => r.Id == roomid)
+            Room room = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld).Where(r => r.Id == roomId)
                 .FirstOrDefault();
 
             if (room != null)
@@ -894,14 +841,13 @@ namespace PetCityApi1.Controllers
         }
 
         /// <summary>
-        ///  寵物旅館後台管理-房型列表-刪除房型
+        ///  寵物旅館後台管理-房型列表-刪除房型 (後台)
         /// </summary>
         [JwtAuthFilter_Hotel] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         [Route("hotel/room/")]
-        public IHttpActionResult Delete(int roomid, ViewModelHotel.Room addRoom)
+        public IHttpActionResult Delete(int roomId)
         {
             //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去put資料
-
             // 取出請求內容，解密 JwtToken 取出資料
             var userToken = JwtAuthFilter_Hotel.GetToken(Request.Headers.Authorization.Parameter);
             int hoteld = (int)userToken["Id"];
@@ -909,7 +855,7 @@ namespace PetCityApi1.Controllers
             // Do Something ~
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
-            Room room = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld).Where(r => r.Id == roomid)
+            Room room = petCityDbContext.Rooms.Where(r => r.HotelId == hoteld).Where(r => r.Id == roomId)
                 .FirstOrDefault();
 
             if (room != null)
@@ -924,10 +870,8 @@ namespace PetCityApi1.Controllers
                 };
                 return Ok(result); //問前端配合200去處理  //還是status code
             }
-
             return BadRequest("無此房型");
         }
-
 
         /// <summary>
         /// Hotel資料
@@ -954,8 +898,6 @@ namespace PetCityApi1.Controllers
             public List<string> Data { get; set; } = new List<string>();
         }
 
-
-
         /// <summary>
         /// 畫面資料
         /// </summary>
@@ -978,13 +920,12 @@ namespace PetCityApi1.Controllers
         }
 
         /// <summary>
-        ///  使用者讀取旅館列表與分頁功能 (homepage)
+        ///  使用者讀取旅館列表與分頁功能 (homepage) (前台)
         /// </summary>
         [Route("hotel/hotelList")]
         public IHttpActionResult GetHotelList(int page = 1, int pageSize = 5)
         {
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-
             var hotels = petCityDbContext.Hotels.AsQueryable(); //宣告好指令 但不執行
 
             int total = 0;
@@ -999,7 +940,7 @@ namespace PetCityApi1.Controllers
 
             var hotel = new HotelViewModle
             {
-                //集合列表 //選取             //物件
+                //集合列表                     //選取             //物件
                 Data = petCityDbContext.Hotels.Select(h => new HotelData
                 {
                     RoomLowPrice = h.Rooms.OrderBy(r => r.RoomPrice).FirstOrDefault().RoomPrice,
@@ -1022,111 +963,208 @@ namespace PetCityApi1.Controllers
             return Ok(hotel);
         }
 
+        /// <summary>
+        /// 4-1.單一旅館資訊頁-前台旅館 (前台)
+        /// </summary>
+        [Route("hotel/hotelInfo")]
+        public IHttpActionResult GetHotelInfo(int hotelId)
+        {
+            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
+            int photoCount = 5;
+            int actTotalCount = petCityDbContext.HotelPhotos.Count();
+            if (actTotalCount < 5)
+            {
+                photoCount = actTotalCount;
+            }
+            var hotelPhoto = petCityDbContext.HotelPhotos.Where(r => r.HotelId == hotelId)
+                .OrderByDescending(r => r.Id).Take(photoCount);
+            List<string> hotelPhotoList = new List<string>();
+            if (hotelPhoto != null)
+            {
+                foreach (var photo in hotelPhoto)
+                {
+                    hotelPhotoList.Add("https://petcity.rocket-coding.com/upload/profile/" + photo.Photo);
+                }
+            }
+
+            //從資料庫"取資料" //轉成陣列傳給前端
+            var serviceTypes = petCityDbContext.Hotels.FirstOrDefault(h => h.Id == hotelId).ServiceTypes;
+            List<string> serviceTypeArr = serviceTypes?.Split(',').ToList();
+
+            //var rooms = petCityDbContext.Rooms.Where(r => r.HotelId == hotelId)
+            //    .ToList();
+            //List<Room> roomList = new List<Room>();
+            //foreach (var room in rooms)
+            //{
+            //    var resultroom = new Room() //這樣會用兩份記憶體
+            //    {
+            //        Id = room.Id,
+            //        RoomPhoto = "https://petcity.rocket-coding.com/upload/profile/" + room.RoomPhoto,
+            //        RoomName = room.RoomName,
+            //        PetType = room.PetType,
+            //        RoomPrice = room.RoomPrice,
+            //        RoomInfo = room.RoomInfo,
+            //    };
+            //    roomList.Add(resultroom);
+            //}
+
+            var orders = petCityDbContext.Orders.Where(o => o.Rooms.Hotel.Id == hotelId).OrderByDescending(o => o.Score).Take(5);
+
+            var hotelComments = orders.Select(o => new
+            {
+                UserName = o.PetCards.Customer.UserName,
+                UserPhoto = o.PetCards.Customer.UserThumbnail,
+                Score = o.Score,
+                Comment = o.Comment,
+            });
+
+            var hotel = petCityDbContext.Hotels.Where(h => h.Id == hotelId).Select(h => new
+            {
+                HotelId = h.Id,
+                HotelPhoto = hotelPhotoList,
+
+                HotelScore =
+                    Math.Round(
+                        (double)h.Rooms.Sum(r => r.Orders.Sum(o => o.Score)) / h.Rooms.Sum(c => c.Orders.Count), 1),
+
+                HotelName = h.HotelName,
+                HotelInfo = h.HotelInfo,
+                HotelService = serviceTypeArr,
+
+                HotelComment = hotelComments,
+
+                Room = h.Rooms.Select(r => new
+                {
+                    Id = r.Id,
+                    RoomPhoto = "https://petcity.rocket-coding.com/upload/profile/" + r.RoomPhoto,
+                    RoomName = r.RoomName,
+                    PetType = r.PetType,
+                    RoomPrice = r.RoomPrice,
+                    RoomInfo = r.RoomInfo,
+                }),
+            });
+            return Ok(new { Hotel = hotel });
+        }
 
         ///// <summary>
-        /////  使用者篩選旅館資料顯示
-        ///// (包含價格區間、地區、日期、FILTER選項)
+        /////  篩選 DEMO
         ///// </summary>
-        //[Route("hotel/hotelInfo")]
-        //public IHttpActionResult GetHotelInfo(int hotelId)
+        //[Route("hotel/hotelFilterDemo")]
+        //public IHttpActionResult GetHotelFilterDemo()
         //{
+        //    //判斷有沒有值 再去做後續動作
+        //    //判斷陣列長度 有沒有大於0
+
+        //    int areaId = 11;
+        //    string[] foodTypes = { "wetFood", "freshFood", "dryFood" };
+        //    string[] serviceTypes = { "pickup", "bath", "123" };
 
         //    PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-        //    var hotel = petCityDbContext.Hotels.Where(h => h.Id == hotelId).Select(h => new
+
+        //    var hotels = petCityDbContext.Hotels.AsQueryable();
+        //    if (areaId != 0)  //單一物件可以用Where
         //    {
-        //        HotelId = h.Id,
-        //        HotelPhoto = "https://petcity.rocket-coding.com/upload/profile/" +
-        //                     h.HotelPhotos.OrderByDescending(p => p.Id).Take(5),
+        //        hotels = hotels.Where(h => h.AreaId == areaId);
+        //    }
 
-        //        HotelScore =
-        //            Math.Round(
-        //                (double)h.Rooms.Sum(r => r.Orders.Sum(o => o.Score)) / h.Rooms.Sum(c => c.Orders.Count), 1),
+        //    var predicate = PredicateBuilder.New<Hotel>();
 
-        //        HotelName = h.HotelName,
-        //        HotelInfo = h.HotelInfo,
-
-        //        HotelComment = new
+        //    if (foodTypes.Length > 0)
+        //    {
+        //        for (int i = 0; i < foodTypes.Length; i++)
         //        {
-        //            Score = h.Rooms.Select(r => r.Orders),
-        //            Comment = h.Rooms.Select(r => r.Orders),
-        //        },
-
-
-        //        Room = new
-        //        {
-        //            RoomPhoto = h.Rooms.Select(r => r.RoomPhoto),
-        //            RoomName = h.Rooms.Select(r => r.RoomName),
-        //            RoomInfo = h.Rooms.Select(r => r.RoomInfo),
-        //            RoomPrice = h.Rooms.Select(r => r.RoomPrice),
+        //            var type = foodTypes[i];
+        //            predicate = predicate.Or(h => h.FoodTypes.Contains(type));
+        //            //hotels = hotels.Where(h => h.FoodTypes.Contains(type));
         //        }
+        //    }
 
+        //    if (serviceTypes.Length > 0)
+        //    {
+        //        for (int j = 0; j < serviceTypes.Length; j++)
+        //        {
+        //            var type = serviceTypes[j];
+        //            predicate = predicate.Or(h => h.FoodTypes.Contains(type));
+        //            //hotels = hotels.Where(h => h.FoodTypes.Contains(type));
+        //        }
+        //    }
 
-        //    });
-        //    return Ok(hotel);
-
+        //    //hotels = hotels.Where(predicate);
+        //    return Ok(hotels);
         //}
 
 
-
-
         /// <summary>
-        ///  篩選 DEMO
+        ///  正式篩選  (先勿用 尚未完成)
         /// </summary>
         [Route("hotel/hotelFilter")]
-        public IHttpActionResult GetHotelFilter()
+        public IHttpActionResult PostHotelFilter(ViewModelHotel.Filter filter)
         {
-
             //判斷有沒有值 再去做後續動作
-
-
             //判斷陣列長度 有沒有大於0
-
-            int AreaId = 7;
-            string[] foodTypes = { "wetFood", "freshFood", "dryFood" };
-            string[] serviceTypes = { "pickup", "bath", "123" };
-
 
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
-            var hotels = petCityDbContext.Hotels.AsQueryable();
-            if (AreaId != 0)  //單一物件可以用Where
+            var predicateHotel = PredicateBuilder.New<Hotel>();  //起手式  //使用套件下的
+            var hotels = petCityDbContext.Hotels.AsQueryable(); //跟資料庫有關  只是先放著不執行
+
+            if (filter.AreaId != 0)  //單一物件可以用Where
             {
-                hotels = hotels.Where(h => h.AreaId == AreaId);
+                hotels = hotels.Where(h => h.AreaId == filter.AreaId);
             }
 
-
-
-            var predicate = PredicateBuilder.New<Hotel>();
-
-            if (foodTypes.Length > 0)
+            if (filter.FoodTypes.Length > 0)
             {
-                for (int i = 0; i < foodTypes.Length; i++)
+                for (int i = 0; i < filter.FoodTypes.Length; i++)
                 {
-                    var type = foodTypes[i];
-                    predicate = predicate.Or(h => h.FoodTypes.Contains(type));
+                    var type = filter.FoodTypes[i];
+                    predicateHotel = predicateHotel.Or(h => h.FoodTypes.Contains(type));
                     //hotels = hotels.Where(h => h.FoodTypes.Contains(type));
                 }
-
             }
 
-
-            if (serviceTypes.Length > 0)
+            if (filter.ServiceTypes.Length > 0)
             {
-                for (int j = 0; j < serviceTypes.Length; j++)
+                for (int j = 0; j < filter.ServiceTypes.Length; j++)
                 {
-                    var type = serviceTypes[j];
-                    predicate = predicate.Or(h => h.FoodTypes.Contains(type));
+                    var type = filter.ServiceTypes[j];
+                    predicateHotel = predicateHotel.Or(h => h.FoodTypes.Contains(type));
                     //hotels = hotels.Where(h => h.FoodTypes.Contains(type));
                 }
+            }
 
+            if (!string.IsNullOrWhiteSpace(filter.PetType))  //單一物件可以用Where
+            {                    //Where只能使用一次    //任何跟他相符的
+                hotels = hotels.Where(h => h.Rooms.Any(r=>r.PetType == filter.PetType) );
+            }
+
+            //用時間判斷 找出那些房間不行，扣掉不行的就是要的 //這段區間內可以被訂的旅館
+            if (!string.IsNullOrWhiteSpace(filter.CheckInDate) && !string.IsNullOrWhiteSpace(filter.CheckOutDate))
+            {
+                string checkInDateString = filter.CheckInDate;
+                DateTime checkinDate = DateTime.Parse(checkInDateString);
+
+                string checkOutDateString = filter.CheckOutDate;
+                DateTime checkoutDate = DateTime.Parse(checkOutDateString);
+
+                //hotels = hotels.Where(h => h.Rooms.Any(r => r.Orders.Any(o => o.CheckInDate >= checkinDate && o.CheckOutDate < checkoutDate)));
+
+                //先使用Where方法在petCityDbContext.Hotels集合中篩選出符合條件的旅店。條件是：每個旅店都必須滿足以下條件：
+                //旅店有房間，並且這些房間都有預訂單，而且每個預訂單的入住日期都大於checkinDate，以及退房日期都小於checkoutDate。這樣，就可以選擇退出符合條件的旅店。
+
+                hotels = petCityDbContext.Hotels.Where(h => h.Rooms.Any(r => r.Orders.Any(o => o.CheckInDate >= checkinDate && o.CheckOutDate < checkoutDate)));
             }
 
             //hotels = hotels.Where(predicate);
 
-
             return Ok(hotels);
         }
+
+
+
+
+
     }
 }
 

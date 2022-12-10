@@ -22,5 +22,6 @@ namespace PetCityApi1.Models
         public string Status { get; set; }
 
 
+        public virtual ICollection<Order> Orders { get; set; } //virtual 虛擬的 //一個類別裡面有很多個消息
     }
 }

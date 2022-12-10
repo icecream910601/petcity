@@ -106,7 +106,6 @@ namespace PetCityApi1.Models
             public string NewPassword { get; set; }
 
 
-
             [Required(ErrorMessage = "{0}必填")]
             [StringLength(100, ErrorMessage = "{0} 長度至少必須為 {2} 個字元。", MinimumLength = 8)]
             [DataType(DataType.Password)]
@@ -115,6 +114,87 @@ namespace PetCityApi1.Models
             public string ConfirmedPassword { get; set; }
         }
 
+        public class UserInfo
+        {
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "使用者姓名")]//欄位名稱
+            public string UserName { get; set; }
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "使用者電話")]//欄位名稱
+            public string UserPhone { get; set; }
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(100)]  //不設長度自動nvarchar(max)
+            [Display(Name = "使用者地址")]//欄位名稱
+            public string UserAddress { get; set; }
+
+        }
+
+        public class Book
+        {
+            [Display(Name = "寵物卡編號")] //欄位名稱
+            public int PetCardId { get; set; } //屬性 習慣第一個字大寫
+
+
+            [Display(Name = "房間編號")] //欄位名稱
+            public int RoomId { get; set; } //屬性 習慣第一個字大寫
+
+
+            [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+            [Display(Name = "訂單日期")]
+            [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]  // 資料庫雖然看不到時間 //但其實有期間  //不要顯示時分秒 //0:d 0000/00/00 0000-00-00
+            [DataType(DataType.Date)]
+            public DateTime? OrderedDate { get; set; }
+
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "入住日期")]//欄位名稱
+            public string CheckInDate { get; set; }
+
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "退房日期")]//欄位名稱
+            public string CheckOutDate { get; set; }
+
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            //[MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "總共入住幾晚")]//欄位名稱
+            public int? TotalNight { get; set; }
+
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            //[MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "訂單總價格")]//欄位名稱
+            public int? TotalPrice { get; set; }
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "使用者姓名")]//欄位名稱
+            public string UserName { get; set; }
+
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            [Display(Name = "使用者電話")]//欄位名稱
+            public string UserPhone { get; set; }
+
+
+
+
+
+        }
 
     }
 }
