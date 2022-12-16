@@ -207,7 +207,6 @@ namespace PetCityApi1.Models
             //[MaxLength(50)]  //不設長度自動nvarchar(max) 
             [Display(Name = "旅館服務")] //欄位名稱
             public List<string> ServiceTypes { get; set; }
-
         }
 
         /// <summary>
@@ -215,7 +214,6 @@ namespace PetCityApi1.Models
         /// </summary>
         public class Room
         {
-
             //[Display(Name = "旅館")]
             //public int? HotelId { get; set; }
 
@@ -239,9 +237,9 @@ namespace PetCityApi1.Models
 
 
             //[Required(ErrorMessage = "{0}必填")]
-            [MaxLength(50)]  //不設長度自動nvarchar(max)
+            //[MaxLength(50)]  //不設長度自動nvarchar(max)
             [Display(Name = "房型價格")]//欄位名稱
-            public string RoomPrice { get; set; }
+            public int? RoomPrice { get; set; }
 
 
 
@@ -249,7 +247,6 @@ namespace PetCityApi1.Models
             //[MaxLength(50)]  //不設長度自動nvarchar(max)
             [Display(Name = "房間簡介")]//欄位名稱
             public string RoomInfo { get; set; }
-
         }
 
         public class Filter
@@ -287,10 +284,44 @@ namespace PetCityApi1.Models
             public string CheckOutDate { get; set; }
 
 
+            ////[Required(ErrorMessage = "{0}必填")]
+            ////[MaxLength(50)]  //不設長度自動nvarchar(max)
+            //[Display(Name = "房型起始價格")]//欄位名稱
+            //public int RoomPriceStart { get; set; }
 
+            ////[Required(ErrorMessage = "{0}必填")]
+            ////[MaxLength(50)]  //不設長度自動nvarchar(max)
+            //[Display(Name = "房型結束價格")]//欄位名稱
+            //public int RoomPriceEnd { get; set; }
+
+
+            //[Required(ErrorMessage = "{0}必填")]
+            //[MaxLength(50)]  //不設長度自動nvarchar(max) 
+            [Display(Name = "價格區間")] //欄位名稱
+            public int[] PriceRange { get; set; }
+
+
+            
+            public int Page { get; set; }
+            public int PageSize { get; set; }
         }
 
 
+
+
+
+        public class CheckInStatus
+        {
+            public string CheckIn { get; set; }
+        }
+        public class CheckOutStatus
+        {
+            public string CheckOut { get; set; }
+        }
+        public class CancelStatus
+        {
+            public string Cancel{ get; set; }
+        }
 
     }
 }

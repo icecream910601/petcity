@@ -19,7 +19,7 @@ namespace PetCityApi1.Controllers
     public class PetcardController : ApiController
     {
         /// <summary>
-        /// 使用者送出訂單請求 新增寵物名片 取得寵物名片ID
+        /// 使用者送出訂單請求 新增寵物名片 取得寵物名片ID,需要帶TOKEN
         ///</summary>
         [Route("petcard/")]
         [JwtAuthFilter] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
@@ -73,7 +73,7 @@ namespace PetCityApi1.Controllers
         }
 
         /// <summary>
-        /// 上傳寵物照片用
+        /// 使用者上傳寵物照片用,需要帶TOKEN
         /// </summary>
         [Route("petcard/uploadpetphoto/")]
         [HttpPost]
@@ -93,10 +93,10 @@ namespace PetCityApi1.Controllers
 
             // 檢查資料夾是否存在，若無則建立
             string root = HttpContext.Current.Server.MapPath(@"~/upload/profile");
-            //if (!Directory.Exists(root))
-            //{
-            //    Directory.CreateDirectory(@"~/upload/profile");
-            //}
+            if (!Directory.Exists(root))
+            {
+                Directory.CreateDirectory(@"~/upload/profile");
+            }
 
             try
             {
@@ -125,7 +125,6 @@ namespace PetCityApi1.Controllers
                 //image.Mutate(x => x.Resize(120, 120)); // 輸入(120, 0)會保持比例出現黑邊
                 image.Save(outputPath);
 
-
                 PetCityNewcontext petCityDbContext = new PetCityNewcontext();
                 var petphoto = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Where(p => p.Id == petCardId).ToList();
                 petphoto[0].PetPhoto = fileName;
@@ -148,7 +147,7 @@ namespace PetCityApi1.Controllers
         }
 
         /// <summary>
-        /// 編輯寵物名片
+        /// 使用者編輯寵物名片,需要帶TOKEN
         ///</summary>
         [Route("petcard/")]
         [JwtAuthFilter] // [JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
@@ -203,7 +202,7 @@ namespace PetCityApi1.Controllers
         }
 
         /// <summary>
-        ///  讀取寵物名片
+        ///  使用者讀取寵物名片,需要帶TOKEN
         /// </summary>
         [JwtAuthFilter] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         [Route("petcard/")]
@@ -216,17 +215,16 @@ namespace PetCityApi1.Controllers
 
             // Do Something ~
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-            var petCardList = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId && p.Id == petCardId).ToList()
-                .FirstOrDefault();
+            var petCardList = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId && p.Id == petCardId).FirstOrDefault();
             if (petCardList == null)
             {
                 return BadRequest("無此寵物名片");
             }
 
             //從資料庫"取資料" //轉成陣列傳給前端
-            var foodTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.Id == 2).FoodTypes;
+            string foodTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.Id == petCardId)?.FoodTypes;
             List<string> foodTypeArr = foodTypes?.Split(',').ToList();
-            var serviceTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.Id == 2).ServiceTypes;
+            string serviceTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.Id == petCardId)?.ServiceTypes;
             List<string> serviceTypeArr = serviceTypes?.Split(',').ToList();
 
             string url = null;
@@ -248,17 +246,12 @@ namespace PetCityApi1.Controllers
                 PetNote = petCardList.PetNote,
                 ServiceTypes = serviceTypeArr,
             };
-
-            if (petCardList != null)
-            {
-                // 處理完請求內容
-                return Ok(new { Status = true, result });
-            }
-            return BadRequest("無此寵物名片");
+            // 處理完請求內容
+            return Ok(new { Status = true, result });
         }
 
         /// <summary>
-        ///  刪除寵物名片
+        ///  使用者刪除寵物名片,需要帶TOKEN
         /// </summary>
         [JwtAuthFilter] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         [Route("petcard/")]
@@ -292,49 +285,91 @@ namespace PetCityApi1.Controllers
 
 
         /// <summary>
-        /// 讀取寵物名片列表 
+        /// 使用者讀取寵物名片列表 ,需要帶TOKEN
         /// </summary>
         [HttpGet]
         [Route("petcard/petcardlist")]
-        //[JwtAuthFilter] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
+        [JwtAuthFilter] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
         public IHttpActionResult GetPetCardList()
         {
             // 取出請求內容，解密 JwtToken 取出資料
-            //var userToken = JwtAuthFilter.GetToken(Request.Headers.Authorization.Parameter);
-            //int customerId = (int)userToken["Id"];
+            var userToken = JwtAuthFilter.GetToken(Request.Headers.Authorization.Parameter);
+            int customerId = (int)userToken["Id"];
 
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
             //從資料庫"取資料" //轉成陣列傳給前端
-            var foodTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == 24).FoodTypes;
+            var foodTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == customerId).FoodTypes;
             string[] foodTypeArr = foodTypes?.Split(',');
-            var serviceTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == 24).FoodTypes;
+            var serviceTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == customerId).FoodTypes;
             string[] serviceTypeArr = serviceTypes?.Split(',');
 
-
-            var petPhoto = petCityDbContext.PetCards.Where(p => p.CustomerId == 24).ToList();
+            var petPhoto = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).ToList();
             if (petPhoto.Count == 0)
             {
                 return BadRequest("無此帳號");
             }
 
-            var petCardList = petCityDbContext.PetCards.Where(p => p.CustomerId == 24).Select(p => new
+            var petCardList = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Select(p => new
             {
-                PetCardId=p.Id,
-                PetPhoto = p.PetPhoto==null?"": "https://petcity.rocket-coding.com/upload/profile/" + p.PetPhoto,  //三元運算值
+                PetCardId = p.Id,
+                //三元運算值
+                PetPhoto = p.PetPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + p.PetPhoto,
                 p.PetName,
-                PetTrpe=p.FoodTypes,
+                PetTrpe = p.FoodTypes,
                 p.PetAge,
                 p.PetSex,
-                FoodTypes= foodTypeArr.ToList(),
+                FoodTypes = foodTypeArr.ToList(),
                 p.PetPersonality,
                 p.PetMedicine,
                 p.PetNote,
-                ServiceType= serviceTypeArr.ToList(),
+                ServiceType = serviceTypeArr.ToList(),
             });
             return Ok(new { Status = true, petCardList });
         }
 
+        /// <summary>
+        ///  讀取寵物名片,不需TOKEN
+        /// </summary>
+        [Route("petcard/order")]
+        public IHttpActionResult GetPetCard(int petCardId)
+        {
+            // Do Something ~
+            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
+            var petCardList = petCityDbContext.PetCards.Where(p =>  p.Id == petCardId).FirstOrDefault();
+            if (petCardList == null)
+            {
+                return BadRequest("無此寵物名片");
+            }
+
+            //從資料庫"取資料" //轉成陣列傳給前端
+            string foodTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.Id == petCardId)?.FoodTypes;
+            List<string> foodTypeArr = foodTypes?.Split(',').ToList();
+            string serviceTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.Id == petCardId)?.ServiceTypes;
+            List<string> serviceTypeArr = serviceTypes?.Split(',').ToList();
+
+            string url = null;
+            if (petCardList.PetPhoto != null)
+            {
+                url = "https://petcity.rocket-coding.com/upload/profile/" + petCardList.PetPhoto;
+            }
+
+            var result = new //這樣會用兩份記憶體
+            {
+                Id = petCardList.Id,
+                PetPhoto = url,
+                PetName = petCardList.PetName,
+                PetType = petCardList.PetType,
+                PetSex = petCardList.PetSex,
+                FoodTypes = foodTypeArr,
+                PetPersonality = petCardList.PetPersonality,
+                PetMedicine = petCardList.PetMedicine,
+                PetNote = petCardList.PetNote,
+                ServiceTypes = serviceTypeArr,
+            };
+            // 處理完請求內容
+            return Ok(new { Status = true, result });
+        }
 
 
 

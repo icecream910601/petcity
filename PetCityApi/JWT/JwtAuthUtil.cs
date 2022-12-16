@@ -33,7 +33,7 @@ namespace PetCityApi1.JWT
                 { "Name", customer.UserName },
                 { "Image", customer.UserThumbnail },
                 { "Identity", customer.Identity },
-                { "Exp", DateTime.Now.AddHours(1).ToString() } // JwtToken 時效設定 30 分
+                { "Exp", DateTime.Now.AddDays(30).ToString() } // JwtToken 時效設定 30 分
             };
 
             // 產生 JwtToken
