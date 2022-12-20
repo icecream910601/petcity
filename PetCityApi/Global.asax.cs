@@ -30,11 +30,22 @@ namespace PetCityApi1
 
             if (context.Request.HttpMethod == "OPTIONS")
             {
+                response.AddHeader("Access-Control-Allow-Origin", "*");
                 response.AddHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT");
                 response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
                 response.AddHeader("Access-Control-Max-Age", "1000000");
                 response.End();
             }
+
+
+
+            //if (context.Request.HttpMethod == "OPTIONS")
+            //{
+            //    response.AddHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT");
+            //    response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+            //    response.AddHeader("Access-Control-Max-Age", "1000000");
+            //    response.End();
+            //}
         }
     }
 }

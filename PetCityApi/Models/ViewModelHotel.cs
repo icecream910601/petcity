@@ -20,14 +20,12 @@ namespace PetCityApi1.Models
             [DataType(DataType.EmailAddress)] //
             [Display(Name = "旅館帳號/Email")] //欄位名稱
             public string HotelAccount { get; set; }
-
-
+            
 
             //[Required(ErrorMessage = "{0}必填")]
             [MaxLength(50)] //不設長度自動nvarchar(max)
             [Display(Name = "旅館姓名")] //欄位名稱
             public string HotelName { get; set; }
-
 
 
             //[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z\d]{8,}$")]
@@ -38,14 +36,11 @@ namespace PetCityApi1.Models
             public string HotelPassWord { get; set; }
 
 
-
             [Required(ErrorMessage = "{0}必填")]
             [DataType(DataType.Password)]
             [Display(Name = "再次確認密碼")]
             [Compare("HotelPassWord", ErrorMessage = "密碼不一致.")]
             public string ConfirmedPassword { get; set; }
-
-
 
 
             [Required(ErrorMessage = "{0}必填")]
@@ -75,12 +70,10 @@ namespace PetCityApi1.Models
             public string HotelPassWord { get; set; }
 
 
-
             [Required(ErrorMessage = "{0}必填")]
             [MaxLength(50)] //不設長度自動nvarchar(max)
             [Display(Name = "身分別")] //欄位名稱
             public string Identity { get; set; }
-
 
         }
 
@@ -133,7 +126,6 @@ namespace PetCityApi1.Models
             //public string HotelThumbnail { get; set; }
 
 
-
             //[Required(ErrorMessage = "{0}必填")]
             [MaxLength(50)] //不設長度自動nvarchar(max)
             [Display(Name = "旅館名稱")] //欄位名稱
@@ -146,12 +138,10 @@ namespace PetCityApi1.Models
             public string HotelPhone { get; set; }
 
 
-
             [Display(Name = "地區")] public int? AreaId { get; set; }
 
             //[ForeignKey("AreaId")]  //綁關聯   //透過ClassId 查出MyCatalog
             //public virtual Area Area { get; set; }//希望可以直接操縱所屬類別  //虛擬的  //我必須知道我的所屬類別是誰
-
 
 
             //[Required(ErrorMessage = "{0}必填")]
@@ -166,13 +156,10 @@ namespace PetCityApi1.Models
             //public string HotelStartTime { get; set; }
 
 
-
             ////[Required(ErrorMessage = "{0}必填")]
             //[MaxLength(50)] //不設長度自動nvarchar(max)
             //[Display(Name = "旅館營業結束時間")] //欄位名稱
             //public string HotelEndTime { get; set; }
-
-
 
 
             //[Required(ErrorMessage = "{0}必填")]
@@ -181,12 +168,10 @@ namespace PetCityApi1.Models
             public List<string> HotelBusinessTime { get; set; }
 
 
-
             //[Required(ErrorMessage = "{0}必填")]
             //[MaxLength(50)]  //不設長度自動nvarchar(max)
             [Display(Name = "旅館簡介")] //欄位名稱
             public string HotelInfo { get; set; }
-
 
 
             ////[Required(ErrorMessage = "{0}必填")]
@@ -195,12 +180,10 @@ namespace PetCityApi1.Models
             //public string HotelPhoto { get; set; }
 
 
-
             //[Required(ErrorMessage = "{0}必填")]
             //[MaxLength(50)] 不設長度自動nvarchar(max)
             [Display(Name = "食物類型")] //欄位名稱
             public List<string> FoodTypes { get; set; }
-
 
 
             //[Required(ErrorMessage = "{0}必填")]
@@ -217,10 +200,12 @@ namespace PetCityApi1.Models
             //[Display(Name = "旅館")]
             //public int? HotelId { get; set; }
 
+
             ////[Required(ErrorMessage = "{0}必填")]
             //[MaxLength(50)]  //不設長度自動nvarchar(max)
             //[Display(Name = "房型照片")]//欄位名稱
             //public string RoomPhoto { get; set; }
+
 
             //[Required(ErrorMessage = "{0}必填")]
             [MaxLength(50)]  //不設長度自動nvarchar(max)
@@ -228,12 +213,10 @@ namespace PetCityApi1.Models
             public string RoomName { get; set; }
 
 
-
             //[Required(ErrorMessage = "{0}必填")]
             [MaxLength(50)]  //不設長度自動nvarchar(max)
             [Display(Name = "寵物類型")]//欄位名稱
             public string PetType { get; set; }
-
 
 
             //[Required(ErrorMessage = "{0}必填")]
@@ -242,13 +225,15 @@ namespace PetCityApi1.Models
             public int? RoomPrice { get; set; }
 
 
-
             //[Required(ErrorMessage = "{0}必填")]
             //[MaxLength(50)]  //不設長度自動nvarchar(max)
             [Display(Name = "房間簡介")]//欄位名稱
             public string RoomInfo { get; set; }
         }
 
+        /// <summary>
+        /// 篩選器
+        /// </summary>
         public class Filter
         {
             [Display(Name = "地區")] public int? AreaId { get; set; }
@@ -257,7 +242,6 @@ namespace PetCityApi1.Models
             [MaxLength(50)]  //不設長度自動nvarchar(max)
             [Display(Name = "寵物類型")]//欄位名稱
             public string PetType { get; set; }
-
 
 
             //[Required(ErrorMessage = "{0}必填")]
@@ -300,8 +284,6 @@ namespace PetCityApi1.Models
             [Display(Name = "價格區間")] //欄位名稱
             public int[] PriceRange { get; set; }
 
-
-            
             public int Page { get; set; }
             public int PageSize { get; set; }
         }

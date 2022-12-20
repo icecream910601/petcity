@@ -22,7 +22,7 @@ namespace PetCityApi1.Models
 
 
         //[Required(ErrorMessage = "{0}必填")]
-        [MaxLength(50)]  //不設長度自動nvarchar(max)
+        [MaxLength(100)]  //不設長度自動nvarchar(max)
         [Display(Name = "旅館登入照片")]//欄位名稱
         public string HotelThumbnail { get; set; }
 

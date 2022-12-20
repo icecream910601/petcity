@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 
 namespace PetCityApi1.Models
 {
+    /// <summary>
+    /// 旅館照片
+    /// </summary>
     public class HotelPhoto
     {
         [Key]
@@ -24,19 +27,12 @@ namespace PetCityApi1.Models
 
 
 
-
         [Display(Name = "旅館")]
         public int? HotelId { get; set; }
 
         [ForeignKey("HotelId")]  //綁關聯   //透過ClassId 查出MyCatalog
         [JsonIgnore]
         public virtual Hotel Hotel { get; set; }//希望可以直接操縱所屬類別  //虛擬的  //我必須知道我的所屬類別是誰
-
-
-
-
-
-
-
+        
     }
 }

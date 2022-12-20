@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 
 namespace PetCityApi1.Models
 {
+    /// <summary>
+    /// 收藏清單
+    /// </summary>
     public class KeepList
     {
         [Key]

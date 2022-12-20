@@ -91,7 +91,7 @@ namespace PetCityApi1.JWT
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static Dictionary<string, object> GetToken(string token)
+        public static Dictionary<string, object> GetToken(string token)  //key//value
         {
             return Jose.JWT.Decode<Dictionary<string, object>>(token, Encoding.UTF8.GetBytes(secretKey), JwsAlgorithm.HS512);
         }

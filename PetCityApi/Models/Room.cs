@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 
 namespace PetCityApi1.Models
 {
+    /// <summary>
+    /// 房間
+    /// </summary>
     public class Room
     {
         [Key]
@@ -18,7 +21,7 @@ namespace PetCityApi1.Models
 
 
         //[Required(ErrorMessage = "{0}必填")]
-        [MaxLength(50)]  //不設長度自動nvarchar(max)
+        [MaxLength(100)]  //不設長度自動nvarchar(max)
         [Display(Name = "房型照片")]//欄位名稱
         public string RoomPhoto { get; set; }
 

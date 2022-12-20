@@ -7,6 +7,9 @@ using System.Web;
 
 namespace PetCityApi1.Models
 {
+    /// <summary>
+    /// 顧客
+    /// </summary>
     public class Customer
     {
         [Key]
@@ -63,7 +66,7 @@ namespace PetCityApi1.Models
 
 
         //[Required(ErrorMessage = "{0}必填")]
-        [MaxLength(50)]  //不設長度自動nvarchar(max)
+        [MaxLength(100)]  //不設長度自動nvarchar(max)
         [Display(Name = "會員登入照片")]//欄位名稱
         public string UserThumbnail { get; set; }
 
@@ -75,7 +78,14 @@ namespace PetCityApi1.Models
         public string UserGuid { get; set; }
 
 
-        
+
+        //[Required(ErrorMessage = "{0}必填")]
+        /*  [MaxLength(50)]*/  //不設長度自動nvarchar(max)
+        [Display(Name = "開通狀態")]//欄位名稱
+        public string Status { get; set; }
+
+
+
         public virtual ICollection<KeepList> KeepLists { get; set; } //virtual 虛擬的 //一個類別裡面有很多個消息
     }
 }

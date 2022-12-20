@@ -239,6 +239,7 @@ namespace PetCityApi1.Controllers
                 PetPhoto = url,
                 PetName = petCardList.PetName,
                 PetType = petCardList.PetType,
+                PetAge = petCardList.PetAge,
                 PetSex = petCardList.PetSex,
                 FoodTypes = foodTypeArr,
                 PetPersonality = petCardList.PetPersonality,
@@ -268,7 +269,10 @@ namespace PetCityApi1.Controllers
             PetCard petCardList = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Where(p => p.Id == petCardId)
                 .FirstOrDefault();
 
-            if (petCardList != null)
+            var petCardOrderList = petCityDbContext.Orders.Where(o => o.PetCardId == petCardId).Select(o => o.PetCardId).ToList();
+
+
+            if (petCardList != null && petCardOrderList.Count == 0)
             {
                 petCityDbContext.PetCards.Remove(petCardList);
                 petCityDbContext.SaveChanges();
@@ -280,7 +284,18 @@ namespace PetCityApi1.Controllers
                 };
                 return Ok(result); //問前端配合200去處理  //還是status code
             }
-            return BadRequest("無此寵物名片");
+            else
+            {
+                if (petCardList == null)
+                {
+                    return BadRequest("無此寵物名片");
+                }
+                else
+                {
+                    return Ok(new { status = "此名片有存在歷史訂單", });
+                }
+            }
+
         }
 
 
@@ -298,33 +313,59 @@ namespace PetCityApi1.Controllers
 
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
+            //var petCard = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).ToList();
+            //if (petCard.Count == 0)
+            //{
+            //    return Ok("此帳號無卡片");
+            //}
+
             //從資料庫"取資料" //轉成陣列傳給前端
-            var foodTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == customerId).FoodTypes;
-            string[] foodTypeArr = foodTypes?.Split(',');
-            var serviceTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == customerId).FoodTypes;
-            string[] serviceTypeArr = serviceTypes?.Split(',');
+            //三元運算子 ?? 來檢查 serviceTypes 是否為 null。如果是，則會將空字串賦值給 serviceTypeArr，否則會將 serviceTypes 的值賦值給 serviceTypeArr。
+            ////錯誤var foodTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == customerId).FoodTypes;
+            //var foodTypes = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Select(p => p.FoodTypes).ToList();
+            ////string[] foodTypeArr = foodTypes?.Split(',');
+            //string[] foodTypeArr = (foodTypes ?? "").Split(',');
+            
+            ////錯誤var serviceTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == customerId).ServiceTypes;
+            //var serviceTypes = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Select(p => p.ServiceTypes).ToList();
+            ////string[] serviceTypeArr = serviceTypes?.Split(',');
+            //string[] serviceTypeArr = (serviceTypes ?? "").Split(',');
+            
 
-            var petPhoto = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).ToList();
-            if (petPhoto.Count == 0)
-            {
-                return BadRequest("無此帳號");
-            }
-
+            var order = petCityDbContext.Orders.AsQueryable();
             var petCardList = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Select(p => new
             {
                 PetCardId = p.Id,
                 //三元運算值
                 PetPhoto = p.PetPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + p.PetPhoto,
                 p.PetName,
-                PetTrpe = p.FoodTypes,
+                p.PetType,
                 p.PetAge,
                 p.PetSex,
-                FoodTypes = foodTypeArr.ToList(),
+                p.FoodTypes,
                 p.PetPersonality,
                 p.PetMedicine,
                 p.PetNote,
-                ServiceType = serviceTypeArr.ToList(),
-            });
+                p.ServiceTypes,
+                IsOrders = order.Where(o => o.PetCardId == p.Id).Count() > 0 ? "有訂單" : "沒訂單"
+                //null 是判斷這個資料撈出來是不是空的 
+                //count 是有沒有資料
+                //把撈出來的資料作成集合的東西
+            }).AsEnumerable().Select(a => new
+            {
+                a.PetCardId,
+                a.PetPhoto,
+                a.PetName,
+                a.PetType,
+                a.PetAge,
+                a.PetSex,
+                FoodTypes =  a.FoodTypes?.ToString().Split(',') ,
+                a.PetPersonality,
+                a.PetMedicine,
+                a.PetNote,
+                ServiceTypes = a.ServiceTypes?.ToString().Split(','),
+                a.IsOrders
+            }).ToList();
             return Ok(new { Status = true, petCardList });
         }
 
@@ -336,7 +377,7 @@ namespace PetCityApi1.Controllers
         {
             // Do Something ~
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-            var petCardList = petCityDbContext.PetCards.Where(p =>  p.Id == petCardId).FirstOrDefault();
+            var petCardList = petCityDbContext.PetCards.Where(p => p.Id == petCardId).FirstOrDefault();
             if (petCardList == null)
             {
                 return BadRequest("無此寵物名片");
@@ -360,6 +401,7 @@ namespace PetCityApi1.Controllers
                 PetPhoto = url,
                 PetName = petCardList.PetName,
                 PetType = petCardList.PetType,
+                PetAge = petCardList.PetAge,
                 PetSex = petCardList.PetSex,
                 FoodTypes = foodTypeArr,
                 PetPersonality = petCardList.PetPersonality,

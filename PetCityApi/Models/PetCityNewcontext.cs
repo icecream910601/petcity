@@ -26,7 +26,6 @@ namespace PetCityApi1.Models
         public virtual DbSet<KeepList> KeepLists { get; set; }
         public virtual DbSet<Order> Orders { get; set; }
         public virtual DbSet<PetCard> PetCards { get; set; }
-        public virtual DbSet<ReservedList> ReservedLists { get; set; }
         public virtual DbSet<Room> Rooms { get; set; }
         public virtual DbSet<HotelPhoto> HotelPhotos { get; set; }
 

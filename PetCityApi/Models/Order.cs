@@ -4,9 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Web;
+using Newtonsoft.Json;
 
 namespace PetCityApi1.Models
 {
+    /// <summary>
+    /// 訂單
+    /// </summary>
     public class Order
     {
         [Key]
@@ -64,7 +68,6 @@ namespace PetCityApi1.Models
 
 
 
-
         //[Required(ErrorMessage = "{0}必填")]
         //[MaxLength(50)]  //不設長度自動nvarchar(max)
         [Display(Name = "訂單總價格")]//欄位名稱
@@ -86,7 +89,7 @@ namespace PetCityApi1.Models
 
 
 
-
+        [JsonIgnore]
         [Display(Name = "寵物")]
         public int? PetCardId { get; set; }
         
@@ -94,16 +97,12 @@ namespace PetCityApi1.Models
         public virtual PetCard PetCards { get; set; }//希望可以直接操縱所屬類別  //虛擬的  //我必須知道我的所屬類別是誰
 
 
-
+        [JsonIgnore]
         [Display(Name = "房型")]
         public int? RoomId { get; set; }
         
         [ForeignKey("RoomId")]  //綁關聯   //透過ClassId 查出MyCatalog
         public virtual Room Rooms { get; set; }//希望可以直接操縱所屬類別  //虛擬的  //我必須知道我的所屬類別是誰
 
-
-
-     
-        
     }
 }

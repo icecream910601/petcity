@@ -343,6 +343,18 @@
     <Compile Include="Migrations\202212121521484_updateRommPriceType.Designer.cs">
       <DependentUpon>202212121521484_updateRommPriceType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202212160814466_updatePhotoLength.cs" />
+    <Compile Include="Migrations\202212160814466_updatePhotoLength.Designer.cs">
+      <DependentUpon>202212160814466_updatePhotoLength.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212190622023_addCustomerSignupStatus.cs" />
+    <Compile Include="Migrations\202212190622023_addCustomerSignupStatus.Designer.cs">
+      <DependentUpon>202212190622023_addCustomerSignupStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212200435088_deleteReservedList.cs" />
+    <Compile Include="Migrations\202212200435088_deleteReservedList.Designer.cs">
+      <DependentUpon>202212200435088_deleteReservedList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Area.cs" />
     <Compile Include="Models\Customer.cs" />
@@ -352,7 +364,6 @@
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\PetCard.cs" />
     <Compile Include="Models\PetCityNewcontext.cs" />
-    <Compile Include="Models\ReservedList.cs" />
     <Compile Include="Models\Room.cs" />
     <Compile Include="Models\ViewModelCust.cs" />
     <Compile Include="Models\ViewModelHotel.cs" />
@@ -505,6 +516,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202212121521484_updateRommPriceType.resx">
       <DependentUpon>202212121521484_updateRommPriceType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212160814466_updatePhotoLength.resx">
+      <DependentUpon>202212160814466_updatePhotoLength.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212190622023_addCustomerSignupStatus.resx">
+      <DependentUpon>202212190622023_addCustomerSignupStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212200435088_deleteReservedList.resx">
+      <DependentUpon>202212200435088_deleteReservedList.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
