@@ -354,7 +354,7 @@ namespace PetCityApi1.Controllers
 
             var overlappingOrders = petCityDbContext.Orders
                 .Where(o => o.RoomId == book.RoomId)
-                .Where(o => o.CheckInDate < checkoutDate && o.CheckOutDate > checkinDate);
+                .Where(o => o.CheckInDate < checkoutDate && o.CheckOutDate > checkinDate).Where(o=>o.Status=="reserved");
 
             if (overlappingOrders.Any())
             {

@@ -28,24 +28,25 @@ namespace PetCityApi1
             //allow-origin直接用* 代表網域全開，或是這邊是要設定看對接的人網域是多少
 
 
-            if (context.Request.HttpMethod == "OPTIONS")
-            {
-                response.AddHeader("Access-Control-Allow-Origin", "*");
-                response.AddHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT");
-                response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
-                response.AddHeader("Access-Control-Max-Age", "1000000");
-                response.End();
-            }
-
-
-
+            ////新版
             //if (context.Request.HttpMethod == "OPTIONS")
             //{
+            //    response.AddHeader("Access-Control-Allow-Origin", "*");
             //    response.AddHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT");
             //    response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
             //    response.AddHeader("Access-Control-Max-Age", "1000000");
             //    response.End();
             //}
+
+
+            //原本的
+            if (context.Request.HttpMethod == "OPTIONS")
+            {
+                response.AddHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH, PUT");
+                response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+                response.AddHeader("Access-Control-Max-Age", "1000000");
+                response.End();
+            }
         }
     }
 }

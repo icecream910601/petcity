@@ -813,26 +813,35 @@ namespace PetCityApi1.Controllers
             int hotelId = (int)userToken["Id"];
 
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
+            var order = petCityDbContext.Orders.AsQueryable();
 
-            var rooms = petCityDbContext.Rooms.Where(r => r.HotelId == hotelId)
-                .ToList();
-
-            List<Room> roomList = new List<Room>();
-
-            foreach (var room in rooms)
+            var rooms = petCityDbContext.Rooms.Where(r => r.HotelId == hotelId).Select(r => new
             {
-                var result = new Room() //這樣會用兩份記憶體
-                {
-                    Id = room.Id,
-                    RoomPhoto = "https://petcity.rocket-coding.com/upload/profile/" + room.RoomPhoto,
-                    RoomName = room.RoomName,
-                    PetType = room.PetType,
-                    RoomPrice = room.RoomPrice,
-                    RoomInfo = room.RoomInfo,
-                };
-                roomList.Add(result);
-            }
-            return Ok(new { Status = true, roomList });
+                Id = r.Id,
+                RoomPhoto = "https://petcity.rocket-coding.com/upload/profile/" + r.RoomPhoto,
+                RoomName = r.RoomName,
+                PetType = r.PetType,
+                RoomPrice = r.RoomPrice,
+                RoomInfo = r.RoomInfo,
+                IsOrders = order.Where(o => o.RoomId == r.Id).Count() > 0 ? "有訂單" : "沒訂單"
+            }).ToList();
+
+
+            //List<Room> roomList = new List<Room>();
+            //foreach (var room in rooms)
+            //{
+            //    var result = new Room() //這樣會用兩份記憶體
+            //    {
+            //        Id = room.Id,
+            //        RoomPhoto = "https://petcity.rocket-coding.com/upload/profile/" + room.RoomPhoto,
+            //        RoomName = room.RoomName,
+            //        PetType = room.PetType,
+            //        RoomPrice = room.RoomPrice,
+            //        RoomInfo = room.RoomInfo,
+            //    };
+            //    roomList.Add(result);
+            //}
+            return Ok(new { Status = true, rooms });
         }
 
         /// <summary>
@@ -1099,17 +1108,17 @@ namespace PetCityApi1.Controllers
                 //    RoomPrice = r.RoomPrice,
                 //    RoomInfo = r.RoomInfo,
                 //}),
-                Room = h.Rooms.Where(r => !r.Orders.Any(o =>
-                    (startDate <= o.CheckInDate && o.CheckInDate < endDate) ||
-                    (startDate < o.CheckOutDate && o.CheckOutDate <= endDate))).Select(r => new
-                    {
-                        Id = r.Id,
-                        RoomPhoto = r.RoomPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + r.RoomPhoto,
-                        RoomName = r.RoomName,
-                        PetType = r.PetType,
-                        RoomPrice = r.RoomPrice,
-                        RoomInfo = r.RoomInfo,
-                    })
+                Room = h.Rooms.Where(r => !r.Orders.Any(o => o.Status == "reserved" &&
+                                                              (startDate <= o.CheckInDate && o.CheckInDate < endDate) ||
+                                                              (startDate < o.CheckOutDate && o.CheckOutDate <= endDate))).Select(r => new
+                                                              {
+                                                                  Id = r.Id,
+                                                                  RoomPhoto = r.RoomPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + r.RoomPhoto,
+                                                                  RoomName = r.RoomName,
+                                                                  PetType = r.PetType,
+                                                                  RoomPrice = r.RoomPrice,
+                                                                  RoomInfo = r.RoomInfo,
+                                                              })
             });
             return Ok(new
             {
@@ -1288,7 +1297,7 @@ namespace PetCityApi1.Controllers
                 //再排除符合條件的旅店。
                 hotels = hotels.Where(h =>
                     h.Rooms.Any(r =>
-                        !r.Orders.Any(o =>
+                        !r.Orders.Any(o => o.Status == "reserved" &&
                             //訂單中的入住時間 介於input的入跟退
                             (checkinDate <= o.CheckInDate && o.CheckInDate < checkoutDate) ||
                             //訂單中的退房時間 介於input的入跟退
