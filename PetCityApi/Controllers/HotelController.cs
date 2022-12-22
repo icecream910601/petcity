@@ -1066,7 +1066,7 @@ namespace PetCityApi1.Controllers
             var hotelComments = orders.Select(o => orders.Count() == 0 ? null : new
             {
                 UserName = o.PetCards.Customer.UserName,
-                UserPhoto = o.PetCards.Customer.UserThumbnail,
+                UserPhoto = o.PetCards.Customer.UserThumbnail==null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + o.PetCards.Customer.UserThumbnail,
                 Score = o.Score,
                 Comment = o.Comment,
             });
@@ -1108,7 +1108,7 @@ namespace PetCityApi1.Controllers
                 //    RoomPrice = r.RoomPrice,
                 //    RoomInfo = r.RoomInfo,
                 //}),
-                Room = h.Rooms.Where(r => !r.Orders.Any(o => o.Status == "reserved" &&
+                Room = h.Rooms.Where(r => !r.Orders.Any(o => o.Status == "reserved" || o.Status == "checkIn" &&
                                                               (startDate <= o.CheckInDate && o.CheckInDate < endDate) ||
                                                               (startDate < o.CheckOutDate && o.CheckOutDate <= endDate))).Select(r => new
                                                               {
@@ -1297,7 +1297,7 @@ namespace PetCityApi1.Controllers
                 //再排除符合條件的旅店。
                 hotels = hotels.Where(h =>
                     h.Rooms.Any(r =>
-                        !r.Orders.Any(o => o.Status == "reserved" &&
+                        !r.Orders.Any(o => o.Status == "reserved" || o.Status == "checkIn" &&
                             //訂單中的入住時間 介於input的入跟退
                             (checkinDate <= o.CheckInDate && o.CheckInDate < checkoutDate) ||
                             //訂單中的退房時間 介於input的入跟退
