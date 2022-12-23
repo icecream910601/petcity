@@ -72,6 +72,7 @@ namespace PetCityApi1.Controllers
             return Ok(new { Status = true, result });
         }
 
+
         /// <summary>
         /// 使用者上傳寵物照片用,需要帶TOKEN
         /// </summary>
@@ -146,6 +147,7 @@ namespace PetCityApi1.Controllers
             }
         }
 
+
         /// <summary>
         /// 使用者編輯寵物名片,需要帶TOKEN
         ///</summary>
@@ -201,6 +203,7 @@ namespace PetCityApi1.Controllers
             return BadRequest("無此寵物名片");
         }
 
+
         /// <summary>
         ///  使用者讀取寵物名片,需要帶TOKEN
         /// </summary>
@@ -250,6 +253,7 @@ namespace PetCityApi1.Controllers
             // 處理完請求內容
             return Ok(new { Status = true, result });
         }
+
 
         /// <summary>
         ///  使用者刪除寵物名片,需要帶TOKEN
@@ -313,25 +317,7 @@ namespace PetCityApi1.Controllers
 
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
 
-            //var petCard = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).ToList();
-            //if (petCard.Count == 0)
-            //{
-            //    return Ok("此帳號無卡片");
-            //}
-
             //從資料庫"取資料" //轉成陣列傳給前端
-            //三元運算子 ?? 來檢查 serviceTypes 是否為 null。如果是，則會將空字串賦值給 serviceTypeArr，否則會將 serviceTypes 的值賦值給 serviceTypeArr。
-            ////錯誤var foodTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == customerId).FoodTypes;
-            //var foodTypes = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Select(p => p.FoodTypes).ToList();
-            ////string[] foodTypeArr = foodTypes?.Split(',');
-            //string[] foodTypeArr = (foodTypes ?? "").Split(',');
-            
-            ////錯誤var serviceTypes = petCityDbContext.PetCards.FirstOrDefault(p => p.CustomerId == customerId).ServiceTypes;
-            //var serviceTypes = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Select(p => p.ServiceTypes).ToList();
-            ////string[] serviceTypeArr = serviceTypes?.Split(',');
-            //string[] serviceTypeArr = (serviceTypes ?? "").Split(',');
-            
-
             var order = petCityDbContext.Orders.AsQueryable();
             var petCardList = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Select(p => new
             {
@@ -359,7 +345,7 @@ namespace PetCityApi1.Controllers
                 a.PetType,
                 a.PetAge,
                 a.PetSex,
-                FoodTypes =  a.FoodTypes?.ToString().Split(',') ,
+                FoodTypes = a.FoodTypes?.ToString().Split(','),
                 a.PetPersonality,
                 a.PetMedicine,
                 a.PetNote,
@@ -368,6 +354,7 @@ namespace PetCityApi1.Controllers
             }).ToList();
             return Ok(new { Status = true, petCardList });
         }
+
 
         /// <summary>
         ///  讀取寵物名片,不需TOKEN
@@ -413,11 +400,6 @@ namespace PetCityApi1.Controllers
             return Ok(new { Status = true, result });
         }
 
-
-
-
     }
-
-
 
 }

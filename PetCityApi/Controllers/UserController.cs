@@ -33,12 +33,11 @@ namespace PetCityApi1.Controllers
         [Route("user/signup/")]
         public IHttpActionResult Post(ViewModelCust.Signup signup) //複雜型別
         {
-            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-
             //判斷資料庫中有無此筆資料
             //如無則新增
             //自訂義參數名稱 => 自訂義參數名稱.物件屬性
 
+            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
             var customer = petCityDbContext.Customers.Where(c => c.UserAccount == signup.UserAccount).FirstOrDefault();
 
             if (customer != null) //有此帳號  //此帳號已被註冊過
@@ -64,10 +63,8 @@ namespace PetCityApi1.Controllers
                 petCityDbContext.Customers.Add(cust);
                 petCityDbContext.SaveChanges();
 
-
                 JwtAuthUtil JWTtoken = new JwtAuthUtil();
                 string token = JWTtoken.GenerateToken(cust.Id, cust.UserAccount, cust.UserName, "", cust.Identity);
-
 
                 string fromEmail = ConfigurationManager.AppSettings["FromEmail"];
                 string toEmail = signup.UserAccount;
@@ -92,7 +89,6 @@ namespace PetCityApi1.Controllers
                 SendGmailMail(fromEmail, toEmail, Subject, body, password);
 
 
-
                 var result = new
                 {
                     status = "success",
@@ -106,7 +102,10 @@ namespace PetCityApi1.Controllers
             }
         }
 
-        //[JwtAuthFilter]
+
+        /// <summary>
+        /// 開通註冊
+        /// </summary>
         //[Route("user/open/")]
         //public IHttpActionResult Open(string token)
         //{
@@ -145,6 +144,7 @@ namespace PetCityApi1.Controllers
             mailSender = null;
         }
 
+
         /// <summary>
         /// 會員登入 ，不用帶TOKEN
         /// </summary>
@@ -152,13 +152,12 @@ namespace PetCityApi1.Controllers
         [Route("user/login/")]
         public IHttpActionResult Post(ViewModelCust.Login login)
         {
-            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-            //Customer cust = new Customer();  //用類別的兩種方式 1.new 物件
-
             //判斷資料庫中有無此筆資料//如有則登入
+            //用類別的兩種方式 1.new 物件2.直接給值
 
+            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
             Customer customer = petCityDbContext.Customers.Where(c => c.UserAccount == login.UserAccount)
-                .FirstOrDefault(); //2.直接給值
+                .FirstOrDefault();
 
             if (customer != null) //有此帳號 
             {
@@ -196,24 +195,6 @@ namespace PetCityApi1.Controllers
             }
         }
 
-        /// <summary>
-        /// 登入後取得大頭貼，帶TOKEN
-        /// </summary>
-        //[Route("user/banner/")]
-        //[JwtAuthFilter]
-        //public IHttpActionResult GetBanner()
-        //{
-        //    var userToken = JwtAuthFilter.GetToken(Request.Headers.Authorization.Parameter);
-        //    string image = (string)userToken["Image"];
-
-        //    string thumbNail = "";
-        //    if (thumbNail != null)
-        //    {
-        //        thumbNail = "https://petcity.rocket-coding.com/upload/profile/" + image;
-        //    }
-        //    return Ok(thumbNail);
-        //}
-
 
         /// <summary>
         /// 會員忘記密碼寄信，不用帶TOKEN
@@ -222,14 +203,13 @@ namespace PetCityApi1.Controllers
         [Route("user/forgetpassword/")]
         public IHttpActionResult Post(ViewModelCust.ForgetPassword forgetPwd)
         {
-            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-
             //判斷資料庫中有無此筆資料//如有則寄信
 
+            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
             Customer customer = petCityDbContext.Customers.Where(c => c.UserAccount == forgetPwd.UserAccount)
                 .FirstOrDefault();
 
-            if (customer != null) //有此帳號 
+            if (customer != null)
             {
                 // 網站網址
                 string path = /*Request.Url.Scheme + "://" + Request.Url.Authority +*/
@@ -263,6 +243,7 @@ namespace PetCityApi1.Controllers
                 return BadRequest("查無此帳號");
             }
         }
+
 
         /// <summary>
         /// 會員重設密碼 ，不用帶TOKEN
@@ -305,6 +286,7 @@ namespace PetCityApi1.Controllers
             }
         }
 
+
         /// <summary>
         /// 使用者送出訂單請求-取得飼主資訊,需要帶TOKEN
         ///</summary>
@@ -333,6 +315,7 @@ namespace PetCityApi1.Controllers
             return Ok(new { Status = true, result });
         }
 
+
         /// <summary>
         /// 使用者送出訂單請求-檢查區間這間房間有沒有被訂過 返回可否入住訊息- status=reserved  帶TOKEN  
         /// </summary>
@@ -354,7 +337,7 @@ namespace PetCityApi1.Controllers
 
             var overlappingOrders = petCityDbContext.Orders
                 .Where(o => o.RoomId == book.RoomId)
-                .Where(o => o.CheckInDate < checkoutDate && o.CheckOutDate > checkinDate).Where(o=>o.Status=="reserved" || o.Status == "checkIn");
+                .Where(o => o.CheckInDate < checkoutDate && o.CheckOutDate > checkinDate).Where(o => o.Status == "reserved" || o.Status == "checkIn");
 
             if (overlappingOrders.Any())
             {
@@ -387,6 +370,7 @@ namespace PetCityApi1.Controllers
                 return Ok(result);
             }
         }
+
 
         /// <summary>
         /// 使用者後台管理-使用者讀取個人資訊-(後台),需要帶TOKEN
@@ -425,6 +409,7 @@ namespace PetCityApi1.Controllers
             return Ok(new { Status = true, result });
         }
 
+
         /// <summary>
         /// 使用者後台管理-使用者修改個人資訊-(後台),需要帶TOKEN
         ///</summary>
@@ -457,6 +442,7 @@ namespace PetCityApi1.Controllers
             }
             return BadRequest("無此帳號");
         }
+
 
         /// <summary>
         /// 上傳使用者大頭貼圖片用,需要帶TOKEN
@@ -533,23 +519,6 @@ namespace PetCityApi1.Controllers
 
 
         /// <summary>
-        /// 透過點信件過來，解密 拿到大頭貼  //接的時候要判斷有沒有登入  //沒登入打這支(可之後再完善)
-        ///</summary>
-        //[Route("user/image")]
-        //[JwtAuthFilter]
-        //public IHttpActionResult GetNotCommentListImage()
-        //{
-        //    //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去get資料
-        //    // 取出請求內容，解密 JwtToken 取出資料
-        //    var userToken = JwtAuthFilter.GetToken(Request.Headers.Authorization.Parameter);
-        //    int customerId = (int)userToken["Id"];
-        //    string customerImage = "https://petcity.rocket-coding.com/upload/profile/" + userToken["String"].ToString();
-
-        //    return Ok(customerImage);
-        //}
-
-
-        /// <summary>
         /// 使用者後台管理-使用者取得"未完成"評價清單-(後台),需要帶TOKEN  //如果是透過點信件過來，把連結的token放在header(可之後再完善)
         ///</summary>
         [Route("user/notCommentList")]
@@ -583,29 +552,6 @@ namespace PetCityApi1.Controllers
                 a.Status
             }).ToList();
 
-            ////創建一個 List，用來存儲所有訂單
-            //List<ViewModelCust.CommentList> commentsList = new List<ViewModelCust.CommentList>();
-
-            //var checkInDate = orders.Select(o => o.CheckInDate).FirstOrDefault();
-            //string checkInDateOnly = checkInDate?.ToString("yyyy-MM-dd");
-            //var checkOutDate = orders.Select(o => o.CheckOutDate).FirstOrDefault();
-            //string checkOutDateOnly = checkOutDate?.ToString("yyyy-MM-dd");
-
-            ////遍歷所有訂單
-            //foreach (var order in orders)
-            //{
-            //    //將每份訂單資訊存儲到 List 中
-            //    commentsList.Add(new ViewModelCust.CommentList()
-            //    {
-            //        Id = order.Id,
-            //        RoomPhoto = order.Rooms.RoomPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + order.Rooms.RoomPhoto,
-            //        HotelName = order.Rooms.Hotel.HotelName,
-            //        RoomName = order.Rooms.RoomName,
-            //        CheckInDate = checkInDateOnly,
-            //        CheckOutDate = checkOutDateOnly,
-            //        Status = order.Status,
-            //    });
-            //}
             //返回訂單結果
             return Ok(new { Status = true, result = orders });
         }
@@ -624,13 +570,11 @@ namespace PetCityApi1.Controllers
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
             var orders = petCityDbContext.Orders.Where(o => o.PetCards.Customer.Id == customerId).Where(o => o.Id == orderId).Where(o => o.Status == "checkOut").ToList();
 
-
             orders[0].Status = comment.Status;
             orders[0].Score = comment.Score;
             orders[0].Comment = comment.Comment;
 
             petCityDbContext.SaveChanges();
-
 
             var result = new
             {
@@ -638,8 +582,8 @@ namespace PetCityApi1.Controllers
                 message = "送出評價成功",
             };
             return Ok(result);
-
         }
+
 
         /// <summary>
         /// 使用者後台管理-使用者取得"已完成"評價清單-(後台),需要帶TOKEN
@@ -674,32 +618,11 @@ namespace PetCityApi1.Controllers
                 a.Status
             }).ToList();
 
-            ////創建一個 List，用來存儲所有訂單
-            //List<ViewModelCust.CommentList> commentsList = new List<ViewModelCust.CommentList>();
-
-            //var checkInDate = orders.Select(o => o.CheckInDate).FirstOrDefault();
-            //string checkInDateOnly = checkInDate?.ToString("yyyy-MM-dd");
-            //var checkOutDate = orders.Select(o => o.CheckOutDate).FirstOrDefault();
-            //string checkOutDateOnly = checkOutDate?.ToString("yyyy-MM-dd");
-
-            ////遍歷所有訂單
-            //foreach (var order in orders)
-            //{
-            //    //將每份訂單資訊存儲到 List 中
-            //    commentsList.Add(new ViewModelCust.CommentList()
-            //    {
-            //        Id = order.Id,
-            //        RoomPhoto = order.Rooms.RoomPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + order.Rooms.RoomPhoto,
-            //        HotelName = order.Rooms.Hotel.HotelName,
-            //        RoomName = order.Rooms.RoomName,
-            //        CheckInDate = checkInDateOnly,
-            //        CheckOutDate = checkOutDateOnly,
-            //        Status = order.Status,
-            //    });
-            //}
+            
             //返回訂單結果
             return Ok(new { Status = true, result = orders });
         }
+
 
         /// <summary>
         /// 使用者後台管理-使用者查看單一安心評價 -(後台),需要帶TOKEN
@@ -723,6 +646,7 @@ namespace PetCityApi1.Controllers
             };
             return Ok(new { Status = true, result });
         }
+
 
         /// <summary>
         /// 使用者後台管理-使用者查看"完成預約"清單 需要帶TOKEN
@@ -752,7 +676,7 @@ namespace PetCityApi1.Controllers
                 o.Status,
             }).AsEnumerable().Select(a => new
             {
-                OrderId=a.Id,
+                OrderId = a.Id,
                 a.RoomPhoto,
                 a.HotelName,
                 a.RoomName,
@@ -766,36 +690,10 @@ namespace PetCityApi1.Controllers
             }).ToList();
 
 
-            //var checkInDate = orders.Select(o => o.CheckInDate).FirstOrDefault();
-            //string checkInDateOnly = checkInDate?.ToString("yyyy-MM-dd");
-            //var checkOutDate = orders.Select(o => o.CheckOutDate).FirstOrDefault();
-            //string checkOutDateOnly = checkOutDate?.ToString("yyyy-MM-dd");
-
-            ////創建一個 List，用來存儲所有訂單
-            //List<ViewModelCust.OrderList> orderList = new List<ViewModelCust.OrderList>();
-
-            ////遍歷所有訂單
-            //foreach (var order in orders)
-            //{
-            //    //將每份訂單資訊存儲到 List 中
-            //    orderList.Add(new ViewModelCust.OrderList()
-            //    {
-            //        OrderId = order.Id,
-            //        RoomPhoto = order.Rooms.RoomPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + order.Rooms.RoomPhoto,
-            //        HotelName = order.Rooms.Hotel.HotelName,
-            //        RoomName = order.Rooms.RoomName,
-            //        CheckInDate = checkInDateOnly,
-            //        CheckOutDate = checkOutDateOnly,
-            //        TotalPrice = order.TotalPrice,
-            //        PetCardId = order.PetCardId,
-            //        PetName = order.PetCards.PetName,
-            //        PetPhoto = order.PetCards.PetPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + order.PetCards.PetPhoto,
-            //        Status = order.Status,
-            //    });
-            //}
             //返回訂單結果
             return Ok(new { Status = true, result = orders });
         }
+
 
         /// <summary>
         /// 使用者後台管理-使用者查看"取消預約"清單 需要帶TOKEN
@@ -838,36 +736,11 @@ namespace PetCityApi1.Controllers
                 a.Status
             }).ToList();
 
-            //var checkInDate = orders.Select(o => o.CheckInDate).FirstOrDefault();
-            //string checkInDateOnly = checkInDate?.ToString("yyyy-MM-dd");
-            //var checkOutDate = orders.Select(o => o.CheckOutDate).FirstOrDefault();
-            //string checkOutDateOnly = checkOutDate?.ToString("yyyy-MM-dd");
-
-            ////創建一個 List，用來存儲所有訂單
-            //List<ViewModelCust.OrderList> orderList = new List<ViewModelCust.OrderList>();
-
-            ////遍歷所有訂單
-            //foreach (var order in orders)
-            //{
-            //    //將每份訂單資訊存儲到 List 中
-            //    orderList.Add(new ViewModelCust.OrderList()
-            //    {
-            //        OrderId = order.Id,
-            //        RoomPhoto = order.Rooms.RoomPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + order.Rooms.RoomPhoto,
-            //        HotelName = order.Rooms.Hotel.HotelName,
-            //        RoomName = order.Rooms.RoomName,
-            //        CheckInDate = checkInDateOnly,
-            //        CheckOutDate = checkOutDateOnly,
-            //        TotalPrice = order.TotalPrice,
-            //        PetCardId = order.PetCardId,
-            //        PetName = order.PetCards.PetName,
-            //        PetPhoto = order.PetCards.PetPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + order.PetCards.PetPhoto,
-            //        Status = order.Status,
-            //    });
-            //}
+           
             //返回訂單結果
-            return Ok(new { Status = true, result = orders});
+            return Ok(new { Status = true, result = orders });
         }
+
 
         /// <summary> 
         /// 使用者後台管理-使用者查看"歷史預約"清單 需要帶TOKEN
@@ -910,37 +783,11 @@ namespace PetCityApi1.Controllers
                 a.Status
             }).ToList();
 
-            //var checkInDate = orders.Select(o => o.CheckInDate).FirstOrDefault();
-            //string checkInDateOnly = checkInDate?.ToString("yyyy-MM-dd");
-            //var checkOutDate = orders.Select(o => o.CheckOutDate).FirstOrDefault();
-            //string checkOutDateOnly = checkOutDate?.ToString("yyyy-MM-dd");
-
-            ////創建一個 List，用來存儲所有訂單
-            //List<ViewModelCust.OrderList> orderList = new List<ViewModelCust.OrderList>();
-
-
-            ////遍歷所有訂單
-            //foreach (var order in orders)
-            //{
-            //    //將每份訂單資訊存儲到 List 中
-            //    orderList.Add(new ViewModelCust.OrderList()
-            //    {
-            //        OrderId = order.Id,
-            //        RoomPhoto = order.Rooms.RoomPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + order.Rooms.RoomPhoto,
-            //        HotelName = order.Rooms.Hotel.HotelName,
-            //        RoomName = order.Rooms.RoomName,
-            //        CheckInDate = checkInDateOnly,
-            //        CheckOutDate = checkOutDateOnly,
-            //        TotalPrice = order.TotalPrice,
-            //        PetCardId = order.PetCardId,
-            //        PetName = order.PetCards.PetName,
-            //        PetPhoto = order.PetCards.PetPhoto == null ? "" : "https://petcity.rocket-coding.com/upload/profile/" + order.PetCards.PetPhoto,
-            //        Status = order.Status,
-            //    });
-            //}
+            
             //返回訂單結果
             return Ok(new { Status = true, result = orders });
         }
+
 
         /// <summary>
         /// 一般會員後台頁-收藏店家 ，要帶TOKEN (應該是放在homepage)
@@ -956,7 +803,6 @@ namespace PetCityApi1.Controllers
             int customerId = (int)userToken["Id"];
 
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-
             KeepList keepList = new KeepList();
 
             keepList.CustomerId = customerId;
@@ -972,6 +818,7 @@ namespace PetCityApi1.Controllers
             };
             return Ok(result);
         }
+
 
         /// <summary>
         /// 一般會員後台頁-取消收藏店家 ，要帶TOKEN
@@ -1006,6 +853,7 @@ namespace PetCityApi1.Controllers
             return BadRequest("無此收藏資料");
         }
 
+
         /// <summary>
         /// 一般會員後台頁-取得收藏店家列表 ，要帶TOKEN
         /// </summary>
@@ -1036,12 +884,13 @@ namespace PetCityApi1.Controllers
                             .Where(o => o.Score != null) // only count orders with non-null scores
                             .Count()), 1),
                 ////Room是一個集合物件  所以select會以id分類丟出結果
-                ///*   Count= h.Rooms.Select(c => c.Orders.Count)*/ //除錯用
+                //除錯用   Count= h.Rooms.Select(c => c.Orders.Count);
 
                 HotelInfo = k.Hotel.HotelInfo,
             });
             return Ok(new { Status = true, keepList });
         }
+
 
         /// <summary>
         /// 4-1.單一旅館資訊頁-前台旅館 (前台) (給收藏訂單的察看旅館業面用) 不用TOKEN
@@ -1109,9 +958,7 @@ namespace PetCityApi1.Controllers
             });
             return Ok(new { Hotel = hotel });
         }
-
-        //user/google-signin
-
+        
     }
 
 

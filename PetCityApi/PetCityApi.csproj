@@ -358,8 +358,11 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Area.cs" />
     <Compile Include="Models\Customer.cs" />
+    <Compile Include="Models\FoodTypeList.cs" />
     <Compile Include="Models\Hotel.cs" />
+    <Compile Include="Models\HotelData.cs" />
     <Compile Include="Models\HotelPhoto.cs" />
+    <Compile Include="Models\HotelViewModel.cs" />
     <Compile Include="Models\KeepList.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\PetCard.cs" />
