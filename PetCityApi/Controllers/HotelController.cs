@@ -650,9 +650,9 @@ namespace PetCityApi1.Controllers
                     }
 
                     // 使用 SixLabors.ImageSharp 調整圖片尺寸 (正方形大頭貼)
-                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(filePath);
-                    image.Mutate(x => x.Resize(120, 120)); // 輸入(120, 0)會保持比例出現黑邊
-                    image.Save(filePath);
+                    //var image = SixLabors.ImageSharp.Image.Load<Rgba32>(filePath);
+                    //image.Mutate(x => x.Resize(120, 120)); // 輸入(120, 0)會保持比例出現黑邊
+                    //image.Save(filePath);
 
                     //將檔名存進資料庫
                     HotelPhoto hotelPhotos = new HotelPhoto();
@@ -720,7 +720,7 @@ namespace PetCityApi1.Controllers
 
                 // 使用 SixLabors.ImageSharp 調整圖片尺寸 (正方形大頭貼)
                 var image = SixLabors.ImageSharp.Image.Load<Rgba32>(outputPath);
-                //image.Mutate(x => x.Resize(120, 120)); // 輸入(120, 0)會保持比例出現黑邊
+                image.Mutate(x => x.Resize(640, 0)); // 輸入(120, 0)會保持比例出現黑邊
                 image.Save(outputPath);
 
                 PetCityNewcontext petCityDbContext = new PetCityNewcontext();
@@ -979,7 +979,7 @@ namespace PetCityApi1.Controllers
                 serviceTypeArr = serviceTypes.Split(',').ToList();
             }
 
-            var orders = petCityDbContext.Orders.Where(o => o.Rooms.Hotel.Id == hotelId).OrderByDescending(o => o.Score).Take(5);
+            var orders = petCityDbContext.Orders.Where(o => o.Rooms.Hotel.Id == hotelId).Where(o => o.Status == "checkOutComment").OrderByDescending(o => o.Score).Take(5);
 
             //處理空值
             var hotelComments = orders.Select(o => orders.Count() == 0 ? null : new
@@ -1017,7 +1017,7 @@ namespace PetCityApi1.Controllers
                 HotelComment = hotelComments,
 
                 //加入條件
-                Room = h.Rooms.Where(r => !r.Orders.Any(o => o.Status == "reserved" || o.Status == "checkIn" &&
+                Room = h.Rooms.Where(r => !r.Orders.Any(o =>
                                                               (startDate <= o.CheckInDate && o.CheckInDate < endDate) ||
                                                               (startDate < o.CheckOutDate && o.CheckOutDate <= endDate))).Select(r => new
                                                               {
@@ -1161,7 +1161,7 @@ namespace PetCityApi1.Controllers
                 //再排除符合條件的旅店。
                 hotels = hotels.Where(h =>
                     h.Rooms.Any(r =>
-                        !r.Orders.Any(o => o.Status == "reserved" || o.Status == "checkIn" &&
+                        !r.Orders.Any(o =>
                             //訂單中的入住時間 介於input的入跟退
                             (checkinDate <= o.CheckInDate && o.CheckInDate < checkoutDate) ||
                             //訂單中的退房時間 介於input的入跟退
@@ -1210,7 +1210,8 @@ namespace PetCityApi1.Controllers
                     ///*   Count= h.Rooms.Select(c => c.Orders.Count)*/ //除錯用
 
                     HotelInfo = h.HotelInfo,
-                }).Where(h => h.RoomLowPrice != null && h.HotelName != null && h.HotelPhoto != null && h.HotelInfo != null).ToList(), //選取完東西後 轉換成一個列表 ToList不一定要寫
+                }).Where(h => h.RoomLowPrice != null && h.HotelName != null && h.HotelPhoto != null && h.HotelInfo != null).OrderByDescending(h => h.HotelScore).ToList(), //選取完東西後 轉換成一個列表 ToList不一定要寫
+
 
                 Totalpage = total,
                 Nowpage = filter.Page,
@@ -1348,7 +1349,7 @@ namespace PetCityApi1.Controllers
                 a.Status
             }).ToList();
 
-           
+
             //返回訂單結果
             return Ok(new { Status = true, result = orders });
         }
@@ -1389,7 +1390,7 @@ namespace PetCityApi1.Controllers
                 a.Status
             }).ToList();
 
-           
+
             //返回訂單結果
             return Ok(new { Status = true, result = orders });
         }
@@ -1406,7 +1407,7 @@ namespace PetCityApi1.Controllers
             int hoteld = (int)userToken["Id"];
 
             PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-            var orders = petCityDbContext.Orders.Where(o => o.Rooms.Hotel.Id == hoteld).Where(o => o.Status == "checkOut").OrderBy(o => o.RoomId).OrderByDescending(o => o.CheckInDate).Select(o => new
+            var orders = petCityDbContext.Orders.Where(o => o.Rooms.Hotel.Id == hoteld).Where(o => o.Status == "checkOut"|| o.Status == "checkOutComment").OrderBy(o => o.RoomId).OrderByDescending(o => o.CheckInDate).Select(o => new
             {
                 o.Id,
                 o.PetCards.Customer.UserName,
@@ -1430,7 +1431,7 @@ namespace PetCityApi1.Controllers
                 a.Status
             }).ToList();
 
-            
+
             //返回訂單結果
             return Ok(new { Status = true, result = orders });
         }
@@ -1471,7 +1472,7 @@ namespace PetCityApi1.Controllers
                 a.Status
             }).ToList();
 
-            
+
             //返回訂單結果
             return Ok(new { Status = true, result = orders });
         }

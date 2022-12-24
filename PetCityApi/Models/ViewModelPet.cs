@@ -10,8 +10,8 @@ namespace PetCityApi1.Models
     {
         //[Required(ErrorMessage = "{0}必填")]
         //[MaxLength(50)] //不設長度自動nvarchar(max)
-        //[Display(Name = "寵物照片")] //欄位名稱
-        //public string PetPhoto { get; set; }
+        [Display(Name = "寵物照片")] //欄位名稱
+        public string PetPhoto { get; set; }
 
 
         //[Required(ErrorMessage = "{0}必填")]
