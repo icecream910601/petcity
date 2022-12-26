@@ -72,63 +72,6 @@ namespace PetCityApi1.Controllers
             return Ok(new { Status = true, result });
         }
 
-        /// <summary>
-        /// 使用者送出訂單請求 新增寵物名片 取得寵物名片ID,需要帶TOKEN (for 否)
-        ///</summary>
-        [Route("petCardForNo/")]
-        [JwtAuthFilter] //[JwtAuthFilter] 標籤，可放於需登入的 API 上，用來檢核 JWT-Token 是否正確
-        public IHttpActionResult AddPetCard(ViewModelPet postPet)
-        {
-            //解密token 取出裡面的例如id   然後再判斷有沒有這個id 有這個id  再去get資料
-            // 取出請求內容，解密 JwtToken 取出資料
-            var userToken = JwtAuthFilter.GetToken(Request.Headers.Authorization.Parameter);
-            int customerId = (int)userToken["Id"];
-
-            PetCityNewcontext petCityDbContext = new PetCityNewcontext();
-            var petCardList = petCityDbContext.PetCards.Where(p => p.CustomerId == customerId).Select(p => p.Id).ToList();
-
-            PetCard petCard = new PetCard();
-            petCard.CustomerId = customerId;
-            petCard.PetName = postPet.PetName;
-            petCard.PetType = postPet.PetType;
-            petCard.PetAge = postPet.PetAge;
-            petCard.PetSex = postPet.PetSex;
-            petCard.PetPhoto = postPet.PetPhoto;
-
-            string resultFoodType = "";
-            foreach (var type in postPet.FoodTypes)
-            {
-                resultFoodType += type + ",";
-            }
-            resultFoodType = resultFoodType.TrimEnd(',');
-            petCard.FoodTypes = resultFoodType;
-
-            petCard.PetPersonality = postPet.PetPersonality;
-            petCard.PetMedicine = postPet.PetMedicine;
-            petCard.PetNote = postPet.PetNote;
-
-            string resultServiceType = "";
-            foreach (var type in postPet.ServiceTypes)
-            {
-                resultServiceType += type + ",";
-            }
-            resultServiceType = resultServiceType.TrimEnd(',');
-            petCard.ServiceTypes = resultServiceType;
-
-            petCityDbContext.PetCards.Add(petCard);
-            petCityDbContext.SaveChanges();
-
-            var result = new
-            {
-                status = "success",
-                message = "新增寵物名片成功",
-                petid = petCard.Id,
-            };
-            return Ok(new { Status = true, result });
-        }
-
-
-
 
         /// <summary>
         /// 使用者上傳寵物照片用,需要帶TOKEN
